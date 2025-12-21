@@ -16,6 +16,7 @@ public class Attraction {
     private String name;
     private String imageUrl;
     private String description;
+    private String strategyGuide;
     private Integer viewCount;
     private BigDecimal rating;
     private LocalDateTime createTime;

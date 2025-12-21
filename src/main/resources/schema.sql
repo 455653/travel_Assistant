@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS attraction (
     name VARCHAR(100) NOT NULL COMMENT '景点名称',
     image_url VARCHAR(500) COMMENT '景点图片URL',
     description TEXT COMMENT '景点描述',
+    strategy_guide TEXT COMMENT '旅游攻略',
     view_count INT DEFAULT 0 COMMENT '浏览次数',
     rating DECIMAL(3,1) DEFAULT 0.0 COMMENT '评分(0.0-5.0)',
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

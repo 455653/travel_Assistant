@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>景点详情 - 中国旅游助手</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            color: white;
+        }
+
+        .user-info {
+            font-size: 14px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* 头部信息区 */
+        .header-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 30px;
+        }
+
+        .header-image {
+            flex: 0 0 400px;
+            height: 300px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .header-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .attraction-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .attraction-meta {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rating {
+            color: #f39c12;
+        }
+
+        .views {
+            color: #667eea;
+        }
+
+        .attraction-summary {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.8;
+            margin-top: 20px;
+        }
+
+        /* Tab系统 */
+        .tab-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-header {
+            display: flex;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 30px;
+        }
+
+        .tab-item {
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab-item:hover {
+            color: #667eea;
+        }
+
+        .tab-item.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 内容样式 */
+        .content-text {
+            font-size: 16px;
+            line-height: 2;
+            color: #333;
+            white-space: pre-line;
+        }
+
+        .placeholder {
+            text-align: center;
+            padding: 80px 20px;
+            color: #999;
+            font-size: 18px;
+        }
+
+        .placeholder-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        /* 评论卡片 */
+        .comment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .comment-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .comment-card:hover {
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
+            transform: translateX(5px);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .comment-user {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .comment-rating {
+            color: #f39c12;
+            font-size: 14px;
+        }
+
+        .comment-content {
+            color: #555;
+            line-height: 1.8;
+            font-size: 15px;
+        }
+
+        .no-comments {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        /* 加载动画 */
+        .loading {
+            text-align: center;
+            padding: 100px 20px;
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(102, 126, 234, 0.1);
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-brand" onclick="goHome()">
+            🗺️ 中国旅游助手
+        </div>
+        <div class="navbar-user">
+            <div class="user-info">
+                当前用户：<span id="username"></span>
+            </div>
+            <button class="back-btn" onclick="goBack()">返回上一页</button>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 加载状态 -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <div>加载景点详情中...</div>
+        </div>
+
+        <!-- 头部信息区 -->
+        <div id="header-section" class="header-section" style="display: none;">
+            <div class="header-image">
+                <img id="attraction-image" src="" alt="景点图片">
+            </div>
+            <div class="header-info">
+                <h1 class="attraction-title" id="attraction-title"></h1>
+                <div class="attraction-meta">
+                    <div class="meta-item rating">
+                        ⭐ 评分：<span id="attraction-rating"></span>
+                    </div>
+                    <div class="meta-item views">
+                        👁️ 浏览：<span id="attraction-views"></span>
+                    </div>
+                </div>
+                <div class="attraction-summary" id="attraction-summary"></div>
+            </div>
+        </div>
+
+        <!-- Tab系统 -->
+        <div id="tab-section" class="tab-section" style="display: none;">
+            <div class="tab-header">
+                <div class="tab-item active" data-tab="intro">📖 景点介绍</div>
+                <div class="tab-item" data-tab="guide">🗺️ 旅游攻略</div>
+                <div class="tab-item" data-tab="weather">🌤️ 天气</div>
+                <div class="tab-item" data-tab="comments">💬 游客评论</div>
+            </div>
+
+            <!-- Tab内容区 -->
+            <div class="tab-content active" id="tab-intro">
+                <div class="content-text" id="intro-content"></div>
+            </div>
+
+            <div class="tab-content" id="tab-guide">
+                <div class="content-text" id="guide-content"></div>
+            </div>
+
+            <div class="tab-content" id="tab-weather">
+                <div class="placeholder">
+                    <div class="placeholder-icon">🌤️</div>
+                    <div>实时天气接口对接中...</div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-comments">
+                <div class="comment-list" id="comment-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let attractionId = null;
+
+        $(document).ready(function() {
+            // 检查登录状态
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            $('#username').text(user.username);
+
+            // 获取URL参数中的景点ID
+            const urlParams = new URLSearchParams(window.location.search);
+            attractionId = urlParams.get('id');
+
+            if (!attractionId) {
+                alert('景点ID不存在');
+                window.close();
+                return;
+            }
+
+            // 加载景点详情
+            loadAttractionDetail();
+
+            // Tab切换事件
+            $('.tab-item').click(function() {
+                const tabName = $(this).data('tab');
+                switchTab(tabName);
+            });
+        });
+
+        // 加载景点详情
+        function loadAttractionDetail() {
+            $.ajax({
+                url: `/api/attractions/${attractionId}/detail`,
+                method: 'GET',
+                success: function(response) {
+                    if (response.code === 200 && response.data) {
+                        displayAttractionDetail(response.data);
+                    } else {
+                        alert('加载景点详情失败');
+                    }
+                },
+                error: function() {
+                    alert('网络错误，请稍后重试');
+                },
+                complete: function() {
+                    $('#loading').hide();
+                    $('#header-section').fadeIn();
+                    $('#tab-section').fadeIn();
+                }
+            });
+        }
+
+        // 显示景点详情
+        function displayAttractionDetail(data) {
+            const attraction = data.attraction;
+            const comments = data.comments || [];
+
+            // 设置头部信息
+            $('#attraction-image').attr('src', attraction.imageUrl || 'https://via.placeholder.com/400x300?text=暂无图片');
+            $('#attraction-title').text(attraction.name);
+            $('#attraction-rating').text(attraction.rating || 'N/A');
+            $('#attraction-views').text(attraction.viewCount || 0);
+            
+            // 提取简介（描述的前100个字符）
+            const summary = attraction.description ? 
+                (attraction.description.length > 100 ? attraction.description.substring(0, 100) + '...' : attraction.description) 
+                : '暂无简介';
+            $('#attraction-summary').text(summary);
+
+            // 设置景点介绍
+            $('#intro-content').text(attraction.description || '暂无详细介绍');
+
+            // 设置旅游攻略
+            if (attraction.strategyGuide) {
+                $('#guide-content').text(attraction.strategyGuide);
+            } else {
+                $('#guide-content').html('<div class="placeholder"><div class="placeholder-icon">📝</div><div>暂无旅游攻略</div></div>');
+            }
+
+            // 显示评论
+            displayComments(comments);
+        }
+
+        // 显示评论列表
+        function displayComments(comments) {
+            const commentList = $('#comment-list');
+            commentList.empty();
+
+            if (comments && comments.length > 0) {
+                comments.forEach(comment => {
+                    const commentCard = `
+                        <div class="comment-card">
+                            <div class="comment-header">
+                                <div class="comment-user">${comment.userName || '匿名用户'}</div>
+                                <div class="comment-rating">⭐ ${comment.rating || 'N/A'}</div>
+                            </div>
+                            <div class="comment-content">${comment.content || ''}</div>
+                        </div>
+                    `;
+                    commentList.append(commentCard);
+                });
+            } else {
+                commentList.html('<div class="no-comments">暂无评论</div>');
+            }
+        }
+
+        // Tab切换
+        function switchTab(tabName) {
+            // 更新Tab标签样式
+            $('.tab-item').removeClass('active');
+            $(`.tab-item[data-tab="${tabName}"]`).addClass('active');
+
+            // 切换内容
+            $('.tab-content').removeClass('active');
+            $(`#tab-${tabName}`).addClass('active');
+        }
+
+        // 返回上一页
+        function goBack() {
+            window.close();
+        }
+
+        // 返回首页
+        function goHome() {
+            window.location.href = 'home.html';
+        }
+    </script>
+</body>
+</html>

@@ -8,13 +8,14 @@
         <result property="name" column="name"/>
         <result property="imageUrl" column="image_url"/>
         <result property="description" column="description"/>
+        <result property="strategyGuide" column="strategy_guide"/>
         <result property="viewCount" column="view_count"/>
         <result property="rating" column="rating"/>
         <result property="createTime" column="create_time"/>
     </resultMap>
 
     <select id="findTopByCityId" resultMap="attractionResultMap">
-        SELECT id, city_id, name, image_url, description, view_count, rating, create_time
+        SELECT id, city_id, name, image_url, description, strategy_guide, view_count, rating, create_time
         FROM attraction
         WHERE city_id = #{cityId}
         ORDER BY view_count DESC
@@ -22,14 +23,14 @@
     </select>
 
     <select id="findById" resultMap="attractionResultMap">
-        SELECT id, city_id, name, image_url, description, view_count, rating, create_time
+        SELECT id, city_id, name, image_url, description, strategy_guide, view_count, rating, create_time
         FROM attraction
         WHERE id = #{id}
     </select>
 
     <!-- 获取全网热门景点 -->
     <select id="findHotAttractions" resultMap="attractionResultMap">
-        SELECT id, city_id, name, image_url, description, view_count, rating, create_time
+        SELECT id, city_id, name, image_url, description, strategy_guide, view_count, rating, create_time
         FROM attraction
         ORDER BY view_count DESC
         LIMIT #{limit}
