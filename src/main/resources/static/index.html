@@ -879,7 +879,7 @@
             $('#info-panel').html('<div class="loading">加载景点中...</div>');
 
             $.ajax({
-                url: `/api/attractions/top/${cityId}?limit=10`,
+                url: `/api/attractions/top/${cityId}?limit=50`,
                 method: 'GET',
                 success: function(response) {
                     if (response.code === 200 && response.data) {
