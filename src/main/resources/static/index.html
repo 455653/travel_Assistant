@@ -21,14 +21,60 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
-            background: #0a0e27;
+            background: #f5f7fa;
             color: #ecf0f1;
+            margin: 0;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            color: white;
+        }
+
+        .user-info {
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: white;
+            color: #667eea;
         }
 
         #container {
             display: flex;
             width: 100vw;
-            height: 100vh;
+            height: calc(100vh - 60px);
         }
 
         /* 左侧地图容器 */
@@ -36,7 +82,7 @@
             width: 70%;
             height: 100%;
             position: relative;
-            background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 100%);
+            background: #6b6b8a;
         }
 
         #threejs-canvas {
@@ -74,11 +120,11 @@
         #info-panel {
             width: 30%;
             height: 100%;
-            background: linear-gradient(180deg, #16213e 0%, #0f1626 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 30px;
             overflow-y: auto;
-            border-left: 2px solid #1abc9c;
-            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.5);
+            border-left: 2px solid #ffffff;
+            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
         }
 
         #info-panel::-webkit-scrollbar {
@@ -86,11 +132,11 @@
         }
 
         #info-panel::-webkit-scrollbar-track {
-            background: #0f1626;
+            background: rgba(255, 255, 255, 0.1);
         }
 
         #info-panel::-webkit-scrollbar-thumb {
-            background: #1abc9c;
+            background: rgba(255, 255, 255, 0.3);
             border-radius: 4px;
         }
 
@@ -98,9 +144,9 @@
             font-size: 28px;
             font-weight: bold;
             margin-bottom: 25px;
-            color: #1abc9c;
-            text-shadow: 0 0 10px rgba(26, 188, 156, 0.5);
-            border-bottom: 2px solid #1abc9c;
+            color: #ffffff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
             padding-bottom: 10px;
         }
 
@@ -122,8 +168,9 @@
 
         .welcome-text {
             font-size: 18px;
-            color: #bdc3c7;
+            color: #ffffff;
             line-height: 1.8;
+            opacity: 0.95;
         }
 
         /* 城市按钮 */
@@ -132,19 +179,19 @@
             width: 100%;
             padding: 15px 20px;
             margin-bottom: 12px;
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            border: 2px solid #1abc9c;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 10px;
-            color: #ecf0f1;
+            color: #ffffff;
             cursor: pointer;
             transition: all 0.3s ease;
             text-align: left;
         }
 
         .city-button:hover {
-            background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+            background: rgba(255, 255, 255, 0.25);
             transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(26, 188, 156, 0.4);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
         }
 
         .city-button-name {
@@ -155,36 +202,36 @@
 
         .city-button-desc {
             font-size: 13px;
-            color: #bdc3c7;
+            color: rgba(255, 255, 255, 0.8);
         }
 
         /* 景点卡片 */
         .attraction-card {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            background: rgba(255, 255, 255, 0.15);
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 15px;
-            border: 2px solid #3498db;
+            border: 2px solid rgba(255, 255, 255, 0.3);
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
         .attraction-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
-            border-color: #1abc9c;
+            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
         }
 
         .attraction-card-title {
             font-size: 16px;
             font-weight: bold;
-            color: #3498db;
+            color: #ffffff;
             margin-bottom: 8px;
         }
 
         .attraction-card-desc {
             font-size: 13px;
-            color: #bdc3c7;
+            color: rgba(255, 255, 255, 0.85);
             line-height: 1.6;
             margin-bottom: 10px;
         }
@@ -193,7 +240,7 @@
             display: flex;
             justify-content: space-between;
             font-size: 12px;
-            color: #95a5a6;
+            color: rgba(255, 255, 255, 0.7);
         }
 
         .attraction-card-rating {
@@ -202,9 +249,9 @@
 
         /* 返回按钮 */
         .back-button {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            background: rgba(255, 255, 255, 0.2);
             color: white;
-            border: none;
+            border: 1px solid white;
             padding: 10px 20px;
             border-radius: 8px;
             cursor: pointer;
@@ -214,7 +261,8 @@
         }
 
         .back-button:hover {
-            background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+            background: white;
+            color: #667eea;
             transform: translateX(-3px);
         }
 
@@ -247,6 +295,19 @@
     </style>
 </head>
 <body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            🗺️ 中国旅游助手
+        </div>
+        <div class="navbar-user">
+            <div class="user-info">
+                当前用户：<span id="username"></span>
+            </div>
+            <button class="logout-btn" onclick="logout()">退出登录</button>
+        </div>
+    </nav>
+
     <div id="container">
         <!-- 左侧：Three.js 3D 地图 -->
         <div id="map-container">
@@ -293,23 +354,9 @@
         let currentProvince = null; // 当前选中的省份名称
         let provinceLabels = []; // 存储所有省份标签
 
-        // 彩色调色板（政区图风格）
+        // 统一的深蓝色配色方案
         const colorPalette = [
-            0xF56C6C, // 红色
-            0xE6A23C, // 橙色
-            0x67C23A, // 绿色
-            0x409EFF, // 蓝色
-            0x9B59B6, // 紫色
-            0x1ABC9C, // 青色
-            0xF39C12, // 金色
-            0xE74C3C, // 深红
-            0x3498DB, // 浅蓝
-            0x2ECC71, // 翠绿
-            0x9B59B6, // 薰衣草紫
-            0xE67E22, // 胡萝卜橙
-            0x1ABC9C, // 绿松石
-            0xF1C40F, // 明黄
-            0x16A085  // 深绿松石
+            0x2d4a5c  // 深蓝色（所有省份统一颜色）
         ];
 
         // 地图投影（D3.js）
@@ -325,7 +372,7 @@
 
             // 创建场景
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x000000); // 纯黑色背景
+            scene.background = new THREE.Color(0x6b6b8a); // 紫灰色背景
             // 移除雾效，使地图更清晰
 
             // 创建相机（调整为类似图二的侧视透视角度）
@@ -490,9 +537,11 @@
             const material = new THREE.MeshPhongMaterial({ 
                 color: provinceColor,
                 transparent: true,
-                opacity: 0.9,
-                shininess: 30,
-                specular: 0x444444
+                opacity: 0.95,
+                shininess: 20,
+                specular: 0x1abc9c,
+                emissive: 0x000000,
+                emissiveIntensity: 0.1
             });
 
             const mesh = new THREE.Mesh(geometry, material);
@@ -502,20 +551,26 @@
                 originalColor: provinceColor
             };
             
+            // 添加边框线（青色边界）
+            const edges = new THREE.EdgesGeometry(geometry);
+            const lineMaterial = new THREE.LineBasicMaterial({ 
+                color: 0x1abc9c,  // 青色边框
+                linewidth: 2,
+                transparent: true,
+                opacity: 0.9
+            });
+            const lineSegments = new THREE.LineSegments(edges, lineMaterial);
+            lineSegments.renderOrder = 1; // 确保边框在上层渲染
+            mesh.add(lineSegments); // 将边框添加到mesh中
+            
             // 不在这里添加标签，由上层函数控制
 
             return mesh;
         }
 
-        // ==================== 获取省份颜色（基于哈希） ====================
+        // ==================== 获取省份颜色（统一深蓝色） ====================
         function getProvinceColor(provinceName) {
-            // 简单的字符串哈希算法
-            let hash = 0;
-            for (let i = 0; i < provinceName.length; i++) {
-                hash = provinceName.charCodeAt(i) + ((hash << 5) - hash);
-            }
-            const index = Math.abs(hash) % colorPalette.length;
-            return colorPalette[index];
+            return 0x2d4a5c; // 所有省份统一深蓝色
         }
 
         // ==================== 创建省份名称标签 ====================
@@ -630,7 +685,7 @@
 
                 if (targetMesh !== selectedMesh) {
                     hoveredMesh = targetMesh;
-                    highlightMesh(targetMesh, 0xf1c40f); // 金色高亮
+                    highlightMesh(targetMesh, 0xFFD700); // 黄色高亮
                     document.body.style.cursor = 'pointer';
                 }
             } else {
@@ -696,7 +751,7 @@
 
             // 高亮新选中的 Mesh
             selectedMesh = mesh;
-            highlightMesh(mesh, 0xe74c3c); // 红色高亮
+            highlightMesh(mesh, 0xFFD700); // 黄色高亮
 
             // 加载省份信息
             loadProvinceInfo(provinceName);
@@ -944,6 +999,14 @@
         $(document).ready(function() {
             console.log('🚀 开始初始化 Three.js 中国地图...');
 
+            // 检查登录状态
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            $('#username').text(user.username);
+
             // 初始化 Three.js
             initThreeJS();
 
@@ -962,6 +1025,12 @@
 
             console.log('✅ Three.js 中国地图初始化完成');
         });
+
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
     </script>
 </body>
 </html>
