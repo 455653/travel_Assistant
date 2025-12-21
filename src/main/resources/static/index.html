@@ -562,17 +562,7 @@
         let chinaGeoJSON;
         let currentProvince = null;
 
-        // 省份中心点坐标映射（用于点击检测）
-        const provinceCenters = {
-            '湖北省': [114.3, 30.6],
-            '北京市': [116.4, 39.9],
-            '广东省': [113.3, 23.1],
-            '四川省': [104.1, 30.7],
-            '浙江省': [120.2, 30.3],
-            '江苏省': [118.8, 32.1],
-            '陕西省': [108.9, 34.3],
-            '云南省': [102.7, 25.0]
-        };
+        // 省份名称到ID的映射
         const provinceNameToId = {
             '北京': 2,
             '北京市': 2,
@@ -624,6 +614,20 @@
                     geo3D: {
                         map: 'china',
                         roam: true,
+                        // 启用选中功能
+                        selectedMode: 'single',
+                        select: {
+                            label: {
+                                show: true,
+                                color: '#fff',
+                                fontSize: 18,
+                                fontWeight: 'bold'
+                            },
+                            itemStyle: {
+                                color: '#e74c3c',
+                                opacity: 1
+                            }
+                        },
                         itemStyle: {
                             color: '#2c3e50',
                             opacity: 0.9,
@@ -688,70 +692,84 @@
 
                 console.log('ECharts 地图配置完成，开始监听点击事件');
 
-                // 解决方案：使用鼠标移动 + 点击组合检测
-                let currentHoveredProvince = null;
-                let isProcessingClick = false;
+                // ========== 方案：使用 geo3D 的 selectchanged 事件 ==========
+                let lastClickTime = 0;
+                let lastClickedName = null;
                 
-                // 监听鼠标移动，实时检测悬停的省份
-                myChart.getZr().on('mousemove', function(event) {
-                    const clickPoint = [event.offsetX, event.offsetY];
-                    let closestProvince = null;
-                    let minDistance = Infinity;
+                // 监听 geo3D 的选中事件
+                myChart.on('selectchanged', function(params) {
+                    console.log('>>> selectchanged 事件触发 <<<', params);
                     
-                    // 遍历所有省份，找到最近的
-                    for (let provinceName in provinceCenters) {
-                        const geoCoord = provinceCenters[provinceName];
-                        try {
-                            const geo3DComponent = myChart.getModel().getComponent('geo3D', 0);
-                            if (geo3DComponent && geo3DComponent.coordinateSystem) {
-                                const pixelPoint = geo3DComponent.coordinateSystem.dataToPoint(geoCoord);
-                                if (pixelPoint && pixelPoint.length >= 2) {
-                                    const dx = pixelPoint[0] - clickPoint[0];
-                                    const dy = pixelPoint[1] - clickPoint[1];
-                                    const distance = Math.sqrt(dx * dx + dy * dy);
-                                    
-                                    if (distance < minDistance && distance < 150) {
-                                        minDistance = distance;
-                                        closestProvince = provinceName;
-                                    }
-                                }
-                            }
-                        } catch (e) {
-                            // 忽略错误
-                        }
-                    }
-                    
-                    // 更新当前悬停的省份
-                    if (closestProvince !== currentHoveredProvince) {
-                        currentHoveredProvince = closestProvince;
-                        if (currentHoveredProvince) {
-                            console.log('✅ 鼠标悬偟在:', currentHoveredProvince);
+                    if (params && params.selected && params.selected.length > 0) {
+                        const selectedRegion = params.selected[0];
+                        if (selectedRegion.name) {
+                            console.log('✅ 选中的省份:', selectedRegion.name);
+                            loadProvinceInfo(selectedRegion.name);
                         }
                     }
                 });
                 
-                // 点击事件处理
-                myChart.getZr().on('click', function(event) {
-                    if (isProcessingClick) {
-                        return;
+                // 备用方案：监听双击事件
+                myChart.on('dblclick', function(params) {
+                    console.log('>>> 双击事件触发 <<<', params);
+                    if (params && params.name) {
+                        console.log('✅ 双击的省份:', params.name);
+                        loadProvinceInfo(params.name);
                     }
-                    isProcessingClick = true;
+                });
+                
+                // 备用方栈2：监听鼠标移动 + 点击组合
+                let hoveredProvince = null;
+                
+                myChart.on('mouseover', function(params) {
+                    if (params && params.name) {
+                        hoveredProvince = params.name;
+                        console.log('鼠标悬停:', params.name);
+                    }
+                });
+                
+                myChart.on('mouseout', function(params) {
+                    // 不清空 hoveredProvince，保留最后一次悬停的省份
+                });
+                
+                // 监听点击事件（尝试所有可能的事件）
+                myChart.on('click', function(params) {
+                    console.log('>>> click 事件触发 <<<', params);
                     
-                    console.log('\n>>> 地图点击事件触发 <<<');
-                    console.log('点击位置:', event.offsetX, event.offsetY);
-                    console.log('当前悬偟省份:', currentHoveredProvince);
+                    const now = Date.now();
+                    const provinceName = params.name || hoveredProvince;
                     
-                    if (currentHoveredProvince) {
-                        console.log('✅ 检测到省份点击:', currentHoveredProvince);
-                        loadProvinceInfo(currentHoveredProvince);
+                    if (provinceName) {
+                        // 双击检测：如果300ms内点击同一个省份两次
+                        if (lastClickedName === provinceName && (now - lastClickTime) < 300) {
+                            console.log('✅ 检测到双击:', provinceName);
+                            loadProvinceInfo(provinceName);
+                            lastClickTime = 0;
+                            lastClickedName = null;
+                        } else {
+                            // 单击：记录并等待下一次点击
+                            console.log('单击记录:', provinceName, '（再次点击以加载信息）');
+                            lastClickTime = now;
+                            lastClickedName = provinceName;
+                            
+                            // 显示提示
+                            $('#info-panel').html(`
+                                <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 24px; margin-bottom: 10px;">👆</div>
+                                    <div style="font-size: 16px; color: #2e7d32; font-weight: bold;">
+                                        您选中了：${provinceName}
+                                    </div>
+                                    <div style="font-size: 14px; color: #66bb6a; margin-top: 10px;">
+                                        请<strong>再次点击</strong>该省份以查看详情
+                                    </div>
+                                </div>
+                            `);
+                        }
                     } else {
-                        console.log('⚠️ 未检测到省份，请点击右侧按钮');
+                        console.log('⚠️ 未检测到省份名称');
                     }
-                    
-                    setTimeout(function() {
-                        isProcessingClick = false;
-                    }, 300);
                 });
+                // ========================================================
 
                 // 窗口大小改变时重新渲染
                 window.addEventListener('resize', function() {

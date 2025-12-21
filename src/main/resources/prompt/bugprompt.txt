@@ -1,0 +1,28 @@
+你是一名资深的前端开发专家，精通 ECharts 和 ECharts-GL。
+我正在开发一个基于 Spring Boot 的旅游助手项目，前端使用了 ECharts-GL 实现 3D 中国地图。
+
+**🔴 当前问题：**
+我目前的 `index.html` 中，地图点击交互逻辑非常不稳定。
+我现在使用的是一种“Hack”方式：通过 `zRender` 监听 `mousemove` 和 `click`，计算鼠标与预设省份中心点的距离来判断是否选中。
+结果是：我在控制台经常看到 "当前悬停省份: null"，点击湖北省板块没有任何反应，无法触发 `loadProvinceInfo` 函数。
+
+**✅ 我的需求：**
+请帮我**重写** `initMap` 函数中的事件监听部分。
+1.  **删除** 现有复杂的 `myChart.getZr().on('mousemove')` 和基于距离计算的逻辑。
+2.  **删除** `provinceCenters` 坐标映射数组（原生点击不需要这个）。
+3.  **使用 ECharts 标准 API**：请使用 `myChart.on('click', function(params) {...})` 来直接获取点击的省份名称。
+4.  **解决误触问题**：请在代码中加入逻辑，区分“点击”和“拖拽旋转”。如果用户是在拖拽地图，不应触发点击事件（可以通过记录 `mousedown` 和 `mouseup` 的时间差或位置差来判断）。
+5.  **数据联动**：当点击生效时，获取 `params.name`（如"湖北省"），并调用 `loadProvinceInfo(params.name)`。
+
+**📄 现有的相关代码片段 (请基于此修改):**
+```javascript
+// ... 之前的配置 option ...
+myChart.setOption(option);
+
+// --- 请重写以下逻辑 ---
+// 监听鼠标移动，实时检测悬停的省份 (这段代码导致了 bug，请删除)
+myChart.getZr().on('mousemove', function(event) { ... });
+
+// 点击事件处理 (这段代码依赖上面的逻辑，导致获取为 null)
+myChart.getZr().on('click', function(event) { ... });
+// --------------------
