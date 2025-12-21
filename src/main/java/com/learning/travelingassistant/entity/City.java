@@ -13,6 +13,7 @@ public class City {
     private Long id;
     private Long provinceId;
     private String name;
+    private String adcode;
     private String description;
     private LocalDateTime createTime;
 }

@@ -51,3 +51,7 @@ logging:
     org.mybatis: debug
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"
+
+# 高德地图API配置
+amap:
+  key: 5a8bf75d1965447b48049ee749e54816

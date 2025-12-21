@@ -1,0 +1,172 @@
+# Role
+你是一名资深的 Java Spring Boot 全栈开发工程师。
+我正在开发“中国旅游助手”项目（Spring Boot + MyBatis + HTML），现在需要集成**高德地图 (Amap) 天气 API**。
+目标是在“景点详情页” (`detail.html`) 展示该景点所在城市的**未来 4-5 天天气预报**。
+
+# Context (现有资源)
+1.  **高德 API 文档参考**：
+    * 请求地址：`https://restapi.amap.com/v3/weather/weatherInfo`
+    * 请求方式：`GET`
+    * 核心参数：`key` (我的API密钥), `city` (城市Adcode，如 110101), `extensions=all` (all代表预报，base代表实况)。
+    * **响应结构 (JSON)**：
+        ```json
+        {
+            "status": "1",
+            "forecasts": [
+                {
+                    "city": "武汉市",
+                    "adcode": "420100",
+                    "casts": [
+                        { "date": "2023-12-21", "dayweather": "晴", "nightweather": "多云", "daytemp": "10", "nighttemp": "2" },
+                        ... // 未来几天的数据
+                    ]
+                }
+            ]
+        }
+        ```
+
+2.  **现有项目结构**：
+    * `Attraction` (景点) 关联 `City` (城市)。
+    * `City` 表目前只有 `name` (如 "武汉市")，**缺少高德需要的 adcode**。
+
+# Task (任务清单)
+请帮我完成以下 5 项工作：
+
+## 1. 数据库变更 (Database Changes)
+高德 API 必须使用 `adcode` (行政区划代码)。
+* 请提供 SQL 语句：
+    1.  修改 `city` 表，新增 `adcode` 字段 (varchar 20)。
+    2.  提供一条 `UPDATE` 语句，将“武汉市”的 adcode 更新为 `420100`，以便我进行测试。
+* 请同步修改 `City.java` 实体类，增加 `adcode` 属性。
+
+## 2. 后端配置与依赖 (Configuration)
+* **依赖**：如果需要发送 HTTP 请求，请推荐使用 Spring 自带的 `RestTemplate` 或轻量级的 `OkHttp`（请给出 `pom.xml` 依赖代码）。
+* **配置**：请在 `application.yml` 中预留高德 Key 的配置项（`amap.key`）。
+
+## 3. 后端业务逻辑 (Service Layer)
+* 创建 `AmapWeatherService.java`。
+* 实现方法 `getWeatherForecast(String adcode)`：
+    * 使用 `RestTemplate` 发起 GET 请求。
+    * **URL 拼接**：`https://restapi.amap.com/v3/weather/weatherInfo?city={adcode}&key={key}&extensions=all`
+    * **数据清洗**：解析高德返回的复杂 JSON，只提取 `casts` 数组（日期、天气现象、温度），封装成一个简单的 `List<WeatherDTO>` 返回。不要把高德的所有字段都扔给前端。
+
+## 4. 后端接口 (Controller Layer)
+* 在 `AttractionController` 或新建 `WeatherController` 中提供接口：
+    * `GET /api/weather/forecast?attractionId={id}`
+    * **逻辑**：根据景点ID -> 查 `Attraction` -> 查 `City` -> 拿到 `adcode` -> 调用 `AmapWeatherService` -> 返回数据。
+
+## 5. 前端展示 (Frontend - detail.html)
+* 请提供 HTML 和 JavaScript (jQuery) 代码。
+* **UI 布局**：在景点介绍下方添加一个“未来天气”模块。
+* **样式**：使用 Flex 布局横向排列 4-5 个卡片。每个卡片包含：
+    * 日期（如 "周三" 或 "12-21"）
+    * 天气图标（你可以使用 Emoji 🌤️ 🌧️ 或者简单的文字代替）
+    * 温度范围（如 "5°C ~ 12°C"）
+* **交互**：页面加载完成后，自动调用上述 API 并渲染卡片。
+
+# Constraints (约束)
+* 代码必须适配 **Java 21** 和 **Spring Boot 3.x**。
+* JSON 处理请使用 **Jackson** (Spring Boot 默认) 或 FastJson。
+* 请做好**异常处理**：如果 `city` 的 `adcode` 为空，或者高德 API 调用失败，接口不应报错，而是返回一个空列表，前端显示“暂无天气数据”。
+
+请开始生成代码。
+
+我的数据库脚本如下：create table province
+          (
+              id          bigint auto_increment comment '省份ID'
+                  primary key,
+              name        varchar(50)                         not null comment '省份名称',
+              map_code    varchar(20)                         not null comment 'ECharts地图代码',
+              create_time timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+              constraint name
+                  unique (name)
+          )
+              comment '省份表' charset = utf8mb4;
+
+          create table city
+          (
+              id          bigint auto_increment comment '城市ID'
+                  primary key,
+              province_id bigint                              not null comment '所属省份ID',
+              name        varchar(50)                         not null comment '城市名称',
+              description text                                null comment '城市描述',
+              create_time timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+              constraint city_ibfk_1
+                  foreign key (province_id) references province (id)
+                      on delete cascade
+          )
+              comment '城市表' charset = utf8mb4;
+
+          create table attraction
+          (
+              id             bigint auto_increment comment '景点ID'
+                  primary key,
+              city_id        bigint                                  not null comment '所属城市ID',
+              name           varchar(100)                            not null comment '景点名称',
+              image_url      varchar(500)                            null comment '景点图片URL',
+              description    text                                    null comment '景点描述',
+              view_count     int           default 0                 null comment '浏览次数',
+              rating         decimal(3, 1) default 0.0               null comment '评分(0.0-5.0)',
+              create_time    timestamp     default CURRENT_TIMESTAMP null comment '创建时间',
+              strategy_guide text                                    null comment '旅游攻略',
+              constraint attraction_ibfk_1
+                  foreign key (city_id) references city (id)
+                      on delete cascade
+          )
+              comment '景点表' charset = utf8mb4;
+
+          create index idx_city_id
+              on attraction (city_id);
+
+          create index idx_rating
+              on attraction (rating);
+
+          create index idx_province_id
+              on city (province_id);
+
+          create index idx_map_code
+              on province (map_code);
+
+          create table users
+          (
+              id          bigint auto_increment comment '用户ID'
+                  primary key,
+              username    varchar(50)                         not null comment '用户名',
+              password    varchar(255)                        not null comment '密码',
+              create_time timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+              update_time timestamp default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '更新时间',
+              constraint username
+                  unique (username)
+          )
+              comment '用户表' charset = utf8mb4;
+
+          create table comment
+          (
+              id            bigint auto_increment comment '评论ID'
+                  primary key,
+              attraction_id bigint                              not null comment '景点ID',
+              user_id       bigint                              not null comment '用户ID',
+              content       text                                not null comment '评论内容',
+              create_time   timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+              constraint comment_ibfk_1
+                  foreign key (attraction_id) references attraction (id)
+                      on delete cascade,
+              constraint comment_ibfk_2
+                  foreign key (user_id) references users (id)
+                      on delete cascade
+          )
+              comment '评论表' charset = utf8mb4;
+
+          create index idx_attraction_id
+              on comment (attraction_id);
+
+          create index idx_create_time
+              on comment (create_time);
+
+          create index idx_user_id
+              on comment (user_id);
+
+          create index idx_username
+              on users (username);
+
+

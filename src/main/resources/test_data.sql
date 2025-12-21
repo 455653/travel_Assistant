@@ -277,3 +277,10 @@ SET @chengdu_city_id = (SELECT id FROM city WHERE name = '成都' LIMIT 1);
 
 INSERT INTO attraction (city_id, name, image_url, description, view_count, rating) VALUES
 (@chengdu_city_id, '大熊猫繁育研究基地', 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800', '世界著名的大熊猫迁地保护基地', 32000, 4.9);
+
+-- 更新城市的高德地图Adcode（行政区划代码）
+UPDATE city SET adcode = '420100' WHERE name = '武汉';
+UPDATE city SET adcode = '110000' WHERE name = '北京';
+UPDATE city SET adcode = '310000' WHERE name = '上海';
+UPDATE city SET adcode = '330100' WHERE name = '杭州';
+UPDATE city SET adcode = '510100' WHERE name = '成都';

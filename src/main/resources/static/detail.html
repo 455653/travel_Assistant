@@ -283,6 +283,68 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* 天气卡片样式 */
+        .weather-container {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding: 10px 0;
+        }
+
+        .weather-card {
+            flex: 0 0 auto;
+            width: 160px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .weather-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .weather-date {
+            font-size: 14px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .weather-icon {
+            font-size: 48px;
+            margin: 10px 0;
+        }
+
+        .weather-temp {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .weather-desc {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .weather-loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .weather-error {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .weather-error div:first-child {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -345,9 +407,14 @@
             </div>
 
             <div class="tab-content" id="tab-weather">
-                <div class="placeholder">
-                    <div class="placeholder-icon">🌤️</div>
-                    <div>实时天气接口对接中...</div>
+                <div class="weather-loading" id="weather-loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <div>加载天气信息中...</div>
+                </div>
+                <div class="weather-container" id="weather-container" style="display: none;"></div>
+                <div class="weather-error" id="weather-error" style="display: none;">
+                    <div>🌤️</div>
+                    <div>暂时无法获取天气信息</div>
                 </div>
             </div>
 
@@ -475,6 +542,103 @@
             // 切换内容
             $('.tab-content').removeClass('active');
             $(`#tab-${tabName}`).addClass('active');
+
+            // 如果切换到天气Tab，加载天气数据
+            if (tabName === 'weather') {
+                loadWeatherData();
+            }
+        }
+
+        // 加载天气数据
+        let weatherLoaded = false;
+        function loadWeatherData() {
+            if (weatherLoaded) return;
+
+            $('#weather-loading').show();
+            $('#weather-container').hide();
+            $('#weather-error').hide();
+
+            $.ajax({
+                url: `/api/weather/forecast?attractionId=${attractionId}`,
+                method: 'GET',
+                success: function(response) {
+                    console.log('天气API响应:', response);
+                    if (response.code === 200 && response.data && response.data.length > 0) {
+                        console.log('天气数据:', response.data);
+                        displayWeather(response.data);
+                        weatherLoaded = true;
+                    } else {
+                        console.warn('天气数据为空或响应码不是200');
+                        showWeatherError();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('天气API请求失败:', error);
+                    showWeatherError();
+                },
+                complete: function() {
+                    $('#weather-loading').hide();
+                }
+            });
+        }
+
+        // 显示天气数据
+        function displayWeather(weatherList) {
+            const container = $('#weather-container');
+            container.empty();
+
+            // 天气emoji映射
+            const weatherIcons = {
+                '晴': '☀️',
+                '多云': '⛅',
+                '阴': '☁️',
+                '阵雨': '🌦️',
+                '雷阵雨': '⛈️',
+                '小雨': '🌧️',
+                '中雨': '🌧️',
+                '大雨': '🌧️',
+                '暴雨': '⛈️',
+                '雪': '❄️',
+                '小雪': '❄️',
+                '中雪': '❄️',
+                '大雪': '❄️',
+                '雾': '🌫️',
+                '默认': '🌤️'
+            };
+
+            // 周几转换（高德API返回的是1-7的数字）
+            const weekMap = {
+                '1': '周一',
+                '2': '周二',
+                '3': '周三',
+                '4': '周四',
+                '5': '周五',
+                '6': '周六',
+                '7': '周日'
+            };
+
+            weatherList.forEach(weather => {
+                const icon = weatherIcons[weather.dayWeather] || weatherIcons['默认'];
+                const weekText = weekMap[weather.week] || weather.week;
+
+                const card = `
+                    <div class="weather-card">
+                        <div class="weather-date">${weekText} ${weather.date}</div>
+                        <div class="weather-icon">${icon}</div>
+                        <div class="weather-temp">${weather.nightTemp}° ~ ${weather.dayTemp}°</div>
+                        <div class="weather-desc">${weather.dayWeather}</div>
+                    </div>
+                `;
+                container.append(card);
+            });
+
+            console.log('天气卡片渲染完成');
+            container.fadeIn();
+        }
+
+        // 显示天气错误
+        function showWeatherError() {
+            $('#weather-error').fadeIn();
         }
 
         // 返回上一页

@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS city (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '城市ID',
     province_id BIGINT NOT NULL COMMENT '所属省份ID',
     name VARCHAR(50) NOT NULL COMMENT '城市名称',
+    adcode VARCHAR(20) COMMENT '高德地图行政区划代码',
     description TEXT COMMENT '城市描述',
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     FOREIGN KEY (province_id) REFERENCES province(id) ON DELETE CASCADE,
