@@ -37,4 +37,15 @@ public class AttractionController {
         AttractionDetailDTO detail = attractionService.getAttractionDetail(id);
         return Result.success(detail);
     }
+
+    /**
+     * 获取全网热门景点（按 view_count 倒序，默认返回 Top 9）
+     * GET /api/attractions/hot?limit=9
+     */
+    @GetMapping("/hot")
+    public Result<List<Attraction>> getHotAttractions(
+            @RequestParam(defaultValue = "9") Integer limit) {
+        List<Attraction> attractions = attractionService.getHotAttractions(limit);
+        return Result.success(attractions);
+    }
 }

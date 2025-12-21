@@ -31,4 +31,9 @@ public class AttractionServiceImpl implements AttractionService {
         List<Comment> comments = commentMapper.findByAttractionId(id);
         return new AttractionDetailDTO(attraction, comments);
     }
+
+    @Override
+    public List<Attraction> getHotAttractions(Integer limit) {
+        return attractionMapper.findHotAttractions(limit);
+    }
 }

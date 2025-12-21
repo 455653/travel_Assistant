@@ -1,0 +1,202 @@
+你是一名资深的 Java 全栈开发工程师。我的项目基于 **Spring Boot + MyBatis + MySQL**，前端使用 **原生 HTML + jQuery + CSS**。
+目前我已经完成了 `index.html`（基于 Three.js 的 3D 中国地图页）。
+
+# Goal
+现在我需要你帮我完善项目的**用户系统**和**页面导航流程**。
+请基于我提供的数据库结构，实现以下功能模块：
+1.  **用户登录功能**。
+2.  **首页 (Home)**：登录成功后的落地页。
+3.  **热门景点页 (Hot Attractions)**：展示全网热门景点。
+4.  **导航栏集成**：实现页面间的跳转。
+
+# Database Schema (现有数据库)
+create table province
+(
+    id          bigint auto_increment comment '省份ID'
+        primary key,
+    name        varchar(50)                         not null comment '省份名称',
+    map_code    varchar(20)                         not null comment 'ECharts地图代码',
+    create_time timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    constraint name
+        unique (name)
+)
+    comment '省份表' charset = utf8mb4;
+
+create table city
+(
+    id          bigint auto_increment comment '城市ID'
+        primary key,
+    province_id bigint                              not null comment '所属省份ID',
+    name        varchar(50)                         not null comment '城市名称',
+    description text                                null comment '城市描述',
+    create_time timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    constraint city_ibfk_1
+        foreign key (province_id) references province (id)
+            on delete cascade
+)
+    comment '城市表' charset = utf8mb4;
+
+create table attraction
+(
+    id          bigint auto_increment comment '景点ID'
+        primary key,
+    city_id     bigint                                  not null comment '所属城市ID',
+    name        varchar(100)                            not null comment '景点名称',
+    image_url   varchar(500)                            null comment '景点图片URL',
+    description text                                    null comment '景点描述',
+    view_count  int           default 0                 null comment '浏览次数',
+    rating      decimal(3, 1) default 0.0               null comment '评分(0.0-5.0)',
+    create_time timestamp     default CURRENT_TIMESTAMP null comment '创建时间',
+    constraint attraction_ibfk_1
+        foreign key (city_id) references city (id)
+            on delete cascade
+)
+    comment '景点表' charset = utf8mb4;
+
+create index idx_city_id
+    on attraction (city_id);
+
+create index idx_rating
+    on attraction (rating);
+
+create index idx_province_id
+    on city (province_id);
+
+create index idx_map_code
+    on province (map_code);
+
+create table users
+(
+    id          bigint auto_increment comment '用户ID'
+        primary key,
+    username    varchar(50)                         not null comment '用户名',
+    password    varchar(255)                        not null comment '密码',
+    create_time timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    update_time timestamp default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '更新时间',
+    constraint username
+        unique (username)
+)
+    comment '用户表' charset = utf8mb4;
+
+create table comment
+(
+    id            bigint auto_increment comment '评论ID'
+        primary key,
+    attraction_id bigint                              not null comment '景点ID',
+    user_id       bigint                              not null comment '用户ID',
+    content       text                                not null comment '评论内容',
+    create_time   timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    constraint comment_ibfk_1
+        foreign key (attraction_id) references attraction (id)
+            on delete cascade,
+    constraint comment_ibfk_2
+        foreign key (user_id) references users (id)
+            on delete cascade
+)
+    comment '评论表' charset = utf8mb4;
+
+create index idx_attraction_id
+    on comment (attraction_id);
+
+create index idx_create_time
+    on comment (create_time);
+
+create index idx_user_id
+    on comment (user_id);
+
+create index idx_username
+    on users (username);
+
+
+
+
+Requirements Detail (具体需求)
+1. 后端开发 (Spring Boot)
+请在现有的 Controller/Service/Mapper 结构下新增/修改代码：
+
+用户登录接口：
+
+在 UserController 中实现 /api/user/login。
+
+逻辑：接收用户名和密码，查询 users 表。如果匹配成功，返回用户信息；失败则返回错误提示。
+
+注意：为了演示方便，暂不需要复杂的 Spring Security 配置，简单的 Session 或返回登录成功状态即可。
+
+全网热门景点接口：
+
+在 AttractionController 中新增 /api/attractions/hot。
+
+逻辑：不区分城市，直接查询 attraction 表中 view_count 最高的前 9 个景点。
+
+2. 前端开发 (HTML + CSS + JS)
+请生成三个新的 HTML 文件：login.html, home.html, hot.html。
+
+A. 登录页 (login.html)
+布局： 屏幕居中显示一个卡片式登录框。
+
+元素： 用户名输入框、密码输入框、登录按钮。
+
+样式： 背景可以使用模糊的风景图，风格简洁现代。
+
+交互： 点击登录 -> 调用后端 API -> 成功则跳转到 home.html，失败弹出 alert。
+
+B. 首页 (home.html)
+这是登录后的落地页。
+
+顶部导航栏 (Navbar)：
+
+左侧：Logo/项目名称（中国旅游助手）。
+
+右侧：显示“当前用户：xxx” 和 “退出登录”。
+
+主体内容 (Hero Section)：
+
+放置一个巨大的 Banner 或 欢迎语区域。
+
+核心导航按钮（两个大卡片或按钮）：
+
+“去哪旅行”：点击跳转到 index.html (原本的 3D 地图页)。
+
+“热门景点”：点击跳转到 hot.html。
+
+C. 热门景点页 (hot.html)
+参考风格： 请严格参考“精选攻略”类网站的设计（卡片网格布局）。
+
+顶部： 包含与首页一致的导航栏。
+
+主体内容：
+
+标题：“🔥 热门景点推荐”。
+
+网格布局 (Grid)： 展示从后端获取的 Top 9 景点。
+
+卡片样式 (Card)：
+
+上方：景点图片 (image_url)，高度固定（如 200px），object-fit: cover。
+
+下方：
+
+景点名称 (加粗)。
+
+景点描述 (截取前 50 字)。
+
+底部元数据：显示 view_count (浏览量) 和 rating (评分)。
+
+交互： 页面加载时使用 jQuery AJAX 请求 /api/attractions/hot 并渲染卡片。
+
+Deliverables (交付物)
+请提供以下代码：
+
+UserMapper.xml 的 SQL 片段（登录查询）。
+
+UserController.java 的登录接口代码。
+
+AttractionController.java 的热门景点接口代码。
+
+login.html 的完整代码。
+
+home.html 的完整代码。
+
+hot.html 的完整代码 (含 CSS 和 AJAX 逻辑)。
+
+请确保代码风格美观，CSS 使用 Flexbox 或 Grid 布局，配色方案采用清新的蓝白色调（与你参考图类似的风格）。

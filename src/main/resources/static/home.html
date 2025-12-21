@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页 - 中国旅游助手</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            color: white;
+        }
+
+        .user-info {
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 100px 50px;
+            text-align: center;
+            color: white;
+        }
+
+        .hero-section h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            animation: fadeInDown 1s ease;
+        }
+
+        .hero-section p {
+            font-size: 20px;
+            margin-bottom: 50px;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease;
+        }
+
+        /* 导航卡片容器 */
+        .nav-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+            animation: fadeInUp 1.2s ease;
+        }
+
+        .nav-card {
+            background: white;
+            border-radius: 20px;
+            padding: 50px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-card-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .nav-card h2 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .nav-card p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .nav-card:nth-child(1) {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .nav-card:nth-child(1) h2,
+        .nav-card:nth-child(1) p {
+            color: white;
+        }
+
+        .nav-card:nth-child(2) {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .nav-card:nth-child(2) h2,
+        .nav-card:nth-child(2) p {
+            color: white;
+        }
+
+        /* 动画 */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-size: 14px;
+            margin-top: 80px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            🗺️ 中国旅游助手
+        </div>
+        <div class="navbar-user">
+            <div class="user-info">
+                当前用户：<span id="username"></span>
+            </div>
+            <button class="logout-btn" onclick="logout()">退出登录</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <h1>欢迎来到中国旅游助手</h1>
+        <p>探索中国的美丽风景，发现更多精彩</p>
+
+        <div class="nav-cards">
+            <div class="nav-card" onclick="goToMap()">
+                <div class="nav-card-icon">🌏</div>
+                <h2>去哪旅行</h2>
+                <p>浏览3D中国地图，选择你想去的省份和城市，查看热门景点</p>
+            </div>
+
+            <div class="nav-card" onclick="goToHot()">
+                <div class="nav-card-icon">🔥</div>
+                <h2>热门景点</h2>
+                <p>发现全国最热门的旅游景点，查看精选旅游攻略</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        © 2024 中国旅游助手 - 让旅行更美好
+    </footer>
+
+    <script>
+        $(document).ready(function() {
+            // 检查登录状态
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+                // 未登录，跳转到登录页
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // 显示用户名
+            $('#username').text(user.username);
+        });
+
+        // 跳转到3D地图页
+        function goToMap() {
+            window.location.href = 'index.html';
+        }
+
+        // 跳转到热门景点页
+        function goToHot() {
+            window.location.href = 'hot.html';
+        }
+
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

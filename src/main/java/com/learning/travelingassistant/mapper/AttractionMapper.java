@@ -11,4 +11,9 @@ public interface AttractionMapper {
     List<Attraction> findTopByCityId(@Param("cityId") Long cityId, @Param("limit") Integer limit);
     
     Attraction findById(@Param("id") Long id);
+    
+    /**
+     * 获取全网热门景点（按 view_count 倒序）
+     */
+    List<Attraction> findHotAttractions(@Param("limit") Integer limit);
 }

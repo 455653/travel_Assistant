@@ -9,4 +9,9 @@ public interface AttractionService {
     List<Attraction> getTopAttractionsByCityId(Long cityId, Integer limit);
     
     AttractionDetailDTO getAttractionDetail(Long id);
+    
+    /**
+     * 获取全网热门景点（按 view_count 倒序）
+     */
+    List<Attraction> getHotAttractions(Integer limit);
 }

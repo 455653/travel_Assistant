@@ -27,4 +27,12 @@
         WHERE id = #{id}
     </select>
 
+    <!-- 获取全网热门景点 -->
+    <select id="findHotAttractions" resultMap="attractionResultMap">
+        SELECT id, city_id, name, image_url, description, view_count, rating, create_time
+        FROM attraction
+        ORDER BY view_count DESC
+        LIMIT #{limit}
+    </select>
+
 </mapper>
