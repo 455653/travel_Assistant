@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.travelingassistant.mapper.CommentMapper">
+
+    <resultMap id="commentResultMap" type="com.learning.travelingassistant.entity.Comment">
+        <id property="id" column="id"/>
+        <result property="attractionId" column="attraction_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="content" column="content"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <select id="findByAttractionId" resultMap="commentResultMap">
+        SELECT id, attraction_id, user_id, content, create_time
+        FROM comment
+        WHERE attraction_id = #{attractionId}
+        ORDER BY create_time DESC
+    </select>
+
+</mapper>

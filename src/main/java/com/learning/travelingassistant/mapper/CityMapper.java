@@ -1,0 +1,12 @@
+package com.learning.travelingassistant.mapper;
+
+import com.learning.travelingassistant.entity.City;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+
+@Mapper
+public interface CityMapper {
+    List<City> findByProvinceId(@Param("provinceId") Long provinceId);
+}

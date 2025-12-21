@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.travelingassistant.mapper.AttractionMapper">
+
+    <resultMap id="attractionResultMap" type="com.learning.travelingassistant.entity.Attraction">
+        <id property="id" column="id"/>
+        <result property="cityId" column="city_id"/>
+        <result property="name" column="name"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="description" column="description"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="rating" column="rating"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <select id="findTopByCityId" resultMap="attractionResultMap">
+        SELECT id, city_id, name, image_url, description, view_count, rating, create_time
+        FROM attraction
+        WHERE city_id = #{cityId}
+        ORDER BY view_count DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="findById" resultMap="attractionResultMap">
+        SELECT id, city_id, name, image_url, description, view_count, rating, create_time
+        FROM attraction
+        WHERE id = #{id}
+    </select>
+
+</mapper>

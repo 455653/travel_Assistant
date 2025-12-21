@@ -1,0 +1,15 @@
+现在进行前端开发。项目是一个单页面应用（或者简单的 HTML+jQuery）。
+页面布局要求：
+- 顶部：简单的导航栏（显示 Logo 和用户状态）。
+- 主体：左右分栏布局（Split Layout）。
+  - 左侧（70%）：用于放置 ECharts 3D 中国地图容器 (#map-container)。
+  - 右侧（30%）：用于显示信息面板 (#info-panel)，默认显示“请选择省份”。
+
+请提供以下代码：
+1. 完整的 HTML 结构，引入 ECharts.js, ECharts-GL.js 和 jQuery 的 CDN 链接。
+2. CSS 样式，确保左侧地图和右侧面板高度占满屏幕，且地图容器有背景色。
+3. JavaScript 代码：
+   - 初始化 ECharts 3D 地图 (series type: 'map3D')。
+   - 模拟加载 china.json (GeoJSON) 数据（假设已在本地）。
+   - 配置地图样式：地图颜色为深蓝色调，鼠标移入高亮为金色。
+   - **关键交互**：监听地图的 'click' 事件，打印出点击的省份名称。

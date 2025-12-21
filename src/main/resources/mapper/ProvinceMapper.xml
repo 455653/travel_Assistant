@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.travelingassistant.mapper.ProvinceMapper">
+
+    <resultMap id="provinceResultMap" type="com.learning.travelingassistant.entity.Province">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="mapCode" column="map_code"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="provinceResultMap">
+        SELECT id, name, map_code, create_time
+        FROM province
+        ORDER BY id
+    </select>
+
+</mapper>

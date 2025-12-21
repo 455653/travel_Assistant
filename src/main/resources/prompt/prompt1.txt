@@ -1,0 +1,14 @@
+请为我设计 MySQL 数据库结构。项目基于 Spring Boot + MyBatis。
+业务场景：中国旅游助手。
+需要包含以下表：
+1. users (用户表：id, username, password)
+2. province (省份表：id, name, map_code)
+3. city (城市表：id, province_id, name, description)
+4. attraction (景点表：id, city_id, name, image_url, description, view_count, rating)
+5. comment (评论表：id, attraction_id, user_id, content, create_time)
+
+请执行以下任务：
+1. 提供完整的建表 SQL 语句。
+2. 为 province 表提供中国常见省份的初始化 INSERT 语句（至少 5 个，包含 map_code 用于对应 ECharts 地图）。
+3. 为 city 和 attraction 表提供一些测试用的 Dummy Data（假数据），确保湖北省、武汉市及其景点（如黄鹤楼）有数据。
+4. 提供 Spring Boot 的 application.yml 配置文件模板（包含 MyBatis 和 MySQL 连接配置）。

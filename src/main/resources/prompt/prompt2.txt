@@ -1,0 +1,12 @@
+现在进行后端逻辑开发。请基于上面的数据库设计，使用 Spring Boot + MyBatis 生成后端代码。
+请遵循 RESTful 风格，我需要以下 4 个具体的 API 接口实现（包含 Controller, Service 接口与实现, Mapper XML）：
+
+1. 获取所有省份列表：GET /api/provinces
+2. 根据省份 ID 获取城市列表：GET /api/cities/{provinceId}
+3. 根据城市 ID 获取 Top N 热门景点（按 view_count 倒序）：GET /api/attractions/top/{cityId}?limit=5
+4. 获取特定景点的详情（包含该景点的评论列表）：GET /api/attractions/{id}/detail
+
+要求：
+- 使用 @RestController 和 @RequestMapping。
+- 返回统一的结果封装类 Result<T> (code, msg, data)。
+- 省略 import 语句以节省长度，重点展示核心逻辑。
