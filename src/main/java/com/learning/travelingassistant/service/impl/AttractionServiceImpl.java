@@ -36,4 +36,9 @@ public class AttractionServiceImpl implements AttractionService {
     public List<Attraction> getHotAttractions(Integer limit) {
         return attractionMapper.findHotAttractions(limit);
     }
+
+    @Override
+    public List<Attraction> searchAttractions(String keyword) {
+        return attractionMapper.searchAttractions(keyword);
+    }
 }

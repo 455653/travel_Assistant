@@ -1,0 +1,176 @@
+# Role
+你是一名资深的 Java 全栈开发工程师。我们正在开发“中国旅游助手”项目。
+目前项目后端基于 Spring Boot + MyBatis，前端基于 HTML + jQuery。
+
+# Goal (本次任务目标)
+我需要在项目中添加一个**全局搜索功能**。
+用户在首页输入关键字（如“北京”或“长城”），点击搜索后跳转到搜索结果页，展示所有匹配的景点。点击某个景点后，跳转到该景点的详情页 (`detail.html`)。
+
+# 1. Database Context (数据库上下文)
+我的数据库包含 `province`, `city`, `attraction` 三张关联表。
+**请基于以下 Schema 编写查询逻辑：**
+```sql
+
+create table province
+(
+    id          bigint auto_increment comment '省份ID'
+        primary key,
+    name        varchar(50)                         not null comment '省份名称',
+    map_code    varchar(20)                         not null comment 'ECharts地图代码',
+    create_time timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    constraint name
+        unique (name)
+)
+    comment '省份表' charset = utf8mb4;
+
+create table city
+(
+    id          bigint auto_increment comment '城市ID'
+        primary key,
+    province_id bigint                              not null comment '所属省份ID',
+    name        varchar(50)                         not null comment '城市名称',
+    description text                                null comment '城市描述',
+    create_time timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    constraint city_ibfk_1
+        foreign key (province_id) references province (id)
+            on delete cascade
+)
+    comment '城市表' charset = utf8mb4;
+
+create table attraction
+(
+    id             bigint auto_increment comment '景点ID'
+        primary key,
+    city_id        bigint                                  not null comment '所属城市ID',
+    name           varchar(100)                            not null comment '景点名称',
+    image_url      varchar(500)                            null comment '景点图片URL',
+    description    text                                    null comment '景点描述',
+    view_count     int           default 0                 null comment '浏览次数',
+    rating         decimal(3, 1) default 0.0               null comment '评分(0.0-5.0)',
+    create_time    timestamp     default CURRENT_TIMESTAMP null comment '创建时间',
+    strategy_guide text                                    null comment '旅游攻略',
+    constraint attraction_ibfk_1
+        foreign key (city_id) references city (id)
+            on delete cascade
+)
+    comment '景点表' charset = utf8mb4;
+
+create index idx_city_id
+    on attraction (city_id);
+
+create index idx_rating
+    on attraction (rating);
+
+create index idx_province_id
+    on city (province_id);
+
+create index idx_map_code
+    on province (map_code);
+
+create table users
+(
+    id          bigint auto_increment comment '用户ID'
+        primary key,
+    username    varchar(50)                         not null comment '用户名',
+    password    varchar(255)                        not null comment '密码',
+    create_time timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    update_time timestamp default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '更新时间',
+    constraint username
+        unique (username)
+)
+    comment '用户表' charset = utf8mb4;
+
+create table comment
+(
+    id            bigint auto_increment comment '评论ID'
+        primary key,
+    attraction_id bigint                              not null comment '景点ID',
+    user_id       bigint                              not null comment '用户ID',
+    content       text                                not null comment '评论内容',
+    create_time   timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    constraint comment_ibfk_1
+        foreign key (attraction_id) references attraction (id)
+            on delete cascade,
+    constraint comment_ibfk_2
+        foreign key (user_id) references users (id)
+            on delete cascade
+)
+    comment '评论表' charset = utf8mb4;
+
+create index idx_attraction_id
+    on comment (attraction_id);
+
+create index idx_create_time
+    on comment (create_time);
+
+create index idx_user_id
+    on comment (user_id);
+
+create index idx_username
+    on users (username);
+
+
+
+
+2. Backend Requirements (后端开发)
+请修改 Attraction 相关的层级代码，实现混合模糊搜索：
+
+Mapper 层 (AttractionMapper.xml):
+
+编写一个 select 查询 <select id="searchAttractions" ...>。
+
+搜索逻辑（关键）：支持多维度模糊查询。如果用户输入 "北京"，既要能匹配到 attraction.name 里的内容，也要能匹配到 city.name 为 "北京" 下的所有景点，甚至 province.name。
+
+SQL 伪代码逻辑：WHERE a.name LIKE %keyword% OR c.name LIKE %keyword% OR p.name LIKE %keyword% (需要关联 city 和 province 表查询)。
+
+Controller 层 (AttractionController.java):
+
+新增接口：GET /api/attractions/search?keyword={keyword}。
+
+调用 Service 层执行上述查询，返回 Result<List<Attraction>>。
+
+3. Frontend Requirements (前端开发)
+请提供或修改以下 HTML/JS 代码：
+
+A. 修改首页 (home.html)
+在 Banner/Hero 区域（显眼位置）添加一个搜索组件。
+
+包含：一个宽大的输入框（placeholder="搜索景点、城市..."）和一个“搜索”按钮。
+
+交互：点击按钮或按回车键，获取输入框内容，跳转到 search.html?keyword=用户输入的内容。
+
+B. 创建搜索结果页 (search.html)
+页面布局：
+
+顶部：复用导航栏。
+
+顶部下方：再次显示一个搜索条（方便用户重新搜索），并回显当前的关键字。
+
+主体：显示“搜索结果：找到 x 个关于 'xxx' 的景点”。
+
+列表区域：使用网格布局（Grid）展示搜索到的景点卡片（样式参考之前的热门景点卡片）。
+
+逻辑 (JavaScript)：
+
+页面加载时，解析 URL 中的 keyword 参数。
+
+调用后端接口 /api/attractions/search?keyword=...。
+
+如果结果为空，显示“没有找到相关景点”的空状态插图。
+
+如果结果不为空，渲染卡片列表。
+
+跳转逻辑：点击卡片，跳转到详情页 detail.html?id={attractionId}。
+
+Deliverables (交付物)
+请提供以下代码：
+
+AttractionMapper.xml 中新增的 <select> SQL 片段。
+
+AttractionController.java 中新增的接口代码。
+
+home.html 中新增搜索框部分的 HTML/CSS 代码片段。
+
+完整的 search.html 代码（包含 CSS 样式和 JS 逻辑）。
+
+请确保搜索结果页面的 UI 风格与现有的 home.html 和 detail.html 保持一致（蓝白色调，现代简约）。

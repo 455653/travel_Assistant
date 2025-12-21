@@ -16,4 +16,9 @@ public interface AttractionMapper {
      * 获取全网热门景点（按 view_count 倒序）
      */
     List<Attraction> findHotAttractions(@Param("limit") Integer limit);
+    
+    /**
+     * 根据关键字搜索景点（支持景点名、城市名、省份名模糊匹配）
+     */
+    List<Attraction> searchAttractions(@Param("keyword") String keyword);
 }

@@ -48,4 +48,15 @@ public class AttractionController {
         List<Attraction> attractions = attractionService.getHotAttractions(limit);
         return Result.success(attractions);
     }
+
+    /**
+     * 根据关键字搜索景点（支持景点名、城市名、省份名模糊匹配）
+     * GET /api/attractions/search?keyword=关键字
+     */
+    @GetMapping("/search")
+    public Result<List<Attraction>> searchAttractions(
+            @RequestParam String keyword) {
+        List<Attraction> attractions = attractionService.searchAttractions(keyword);
+        return Result.success(attractions);
+    }
 }

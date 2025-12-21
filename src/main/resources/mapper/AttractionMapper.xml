@@ -36,4 +36,16 @@
         LIMIT #{limit}
     </select>
 
+    <!-- 根据关键字搜索景点（支持景点名、城市名、省份名模糊匹配） -->
+    <select id="searchAttractions" resultMap="attractionResultMap">
+        SELECT DISTINCT a.id, a.city_id, a.name, a.image_url, a.description, a.strategy_guide, a.view_count, a.rating, a.create_time
+        FROM attraction a
+        LEFT JOIN city c ON a.city_id = c.id
+        LEFT JOIN province p ON c.province_id = p.id
+        WHERE a.name LIKE CONCAT('%', #{keyword}, '%')
+           OR c.name LIKE CONCAT('%', #{keyword}, '%')
+           OR p.name LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY a.view_count DESC
+    </select>
+
 </mapper>

@@ -14,4 +14,9 @@ public interface AttractionService {
      * 获取全网热门景点（按 view_count 倒序）
      */
     List<Attraction> getHotAttractions(Integer limit);
+    
+    /**
+     * 根据关键字搜索景点
+     */
+    List<Attraction> searchAttractions(String keyword);
 }

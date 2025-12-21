@@ -176,6 +176,48 @@
             font-size: 14px;
             margin-top: 80px;
         }
+
+        /* 搜索框 */
+        .search-container {
+            max-width: 600px;
+            margin: 40px auto 0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px 25px;
+            font-size: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: white;
+            background: white;
+            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .search-btn {
+            padding: 15px 40px;
+            font-size: 16px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -196,6 +238,12 @@
     <section class="hero-section">
         <h1>欢迎来到中国旅游助手</h1>
         <p>探索中国的美丽风景，发现更多精彩</p>
+
+        <!-- 搜索框 -->
+        <div class="search-container">
+            <input type="text" class="search-input" id="searchInput" placeholder="🔍 搜索景点、城市..." onkeypress="handleSearchKeyPress(event)">
+            <button class="search-btn" onclick="performSearch()">搜索</button>
+        </div>
 
         <div class="nav-cards">
             <div class="nav-card" onclick="goToMap()">
@@ -245,6 +293,23 @@
         function logout() {
             localStorage.removeItem('user');
             window.location.href = 'login.html';
+        }
+
+        // 搜索功能
+        function performSearch() {
+            const keyword = $('#searchInput').val().trim();
+            if (keyword) {
+                window.location.href = 'search.html?keyword=' + encodeURIComponent(keyword);
+            } else {
+                alert('请输入搜索关键字');
+            }
+        }
+
+        // 回车键搜索
+        function handleSearchKeyPress(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
         }
     </script>
 </body>
