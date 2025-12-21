@@ -1,0 +1,53 @@
+# Role
+你是一名精通 WebGL、Three.js 和 D3.js 的资深前端开发工程师。我现有的 Spring Boot 后端已经准备就绪，但我需要你完全重写前端页面，使用 **Three.js** 来实现一个可交互的 3D 中国地图，替换掉不稳定的 ECharts 方案。
+
+# Project Context
+项目名称：中国旅游助手 (China Travel Assistant)
+技术栈：
+- 后端：Spring Boot + MyBatis + MySQL (API 已就绪)
+- 前端：原生 HTML + jQuery + **Three.js** + **D3.js (用于地理坐标投影)**
+
+# Backend API Contract (现有接口)
+你的前端代码必须严格对接以下 API：
+1. `GET /api/provinces` : 返回所有省份列表（用于建立省份名称到 ID 的映射）。
+2. `GET /api/cities/{provinceId}` : 根据省份 ID 获取城市列表。
+3. `GET /api/attractions/top/{cityId}?limit=5` : 获取某城市 Top N 景点。
+4. `GET /api/attractions/{id}/detail` : 获取景点详情和评论。
+
+# Functional Requirements (核心需求)
+
+## 1. 3D 地图可视化 (Three.js)
+- **核心逻辑：** 使用 D3.js (`d3-geo`) 将 GeoJSON 的经纬度数据转换为 Three.js 的平面坐标 (x, y)，然后使用 `THREE.ExtrudeGeometry` 将其挤压成有厚度的 3D 板块。
+- **视觉风格：** 科技感/深色模式。
+  - 地图板块颜色：深蓝色 (`#2c3e50`)。
+  - 侧面挤压颜色：亮蓝色 (`#3498db`)。
+  - 鼠标悬停高亮：金色 (`#f1c40f`)。
+  - 选中高亮：红色 (`#e74c3c`)。
+- **相机控制：** 使用 `OrbitControls` 允许用户旋转、缩放地图。限制垂直旋转角度，防止用户看到地图底部。
+
+## 2. 交互逻辑 (Raycaster)
+- **点击检测：** 必须使用 `THREE.Raycaster` 配合鼠标点击事件来实现精准拾取。
+- **防误触：** 区分“拖拽旋转”和“点击”。如果 `mousedown` 和 `mouseup` 坐标偏差很小，才视为点击。
+- **点击响应：**
+  1. 点击某省份 Mesh -> 该 Mesh 变色高亮。
+  2. 摄像机平滑过渡（可选）。
+  3. 调用后端 API 获取该省数据，更新右侧 DOM 面板。
+
+## 3. 界面布局 (UI)
+- 保持左右分栏布局：
+  - **左侧 (70%)：** Three.js Canvas 容器。
+  - **右侧 (30%)：** 信息面板（初始显示“请选择省份” -> 城市列表 -> 景点列表）。
+
+# Technical Constraints (技术约束)
+1. **库引入：** 请使用 CDN 引入 `three.min.js`, `OrbitControls.js`, `d3.min.js`, `jquery.min.js`。
+2. **GeoJSON：** 假设 GeoJSON 数据地址为 `https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json`。
+3. **坐标修正：** 中国地图中心点经纬度约为 (104, 35)，投影时需将地图居中到 (0,0,0) 以便旋转。
+4. **性能优化：** 所有省份 Mesh 请添加到一个 `THREE.Group` 中统一管理。渲染循环中使用 `requestAnimationFrame`。
+
+# Deliverables (你需要提供的)
+请提供一个完整的 `index.html` 文件代码，包含：
+1. CSS 样式。
+2. 完整的 JavaScript 逻辑（包含 Scene 初始化、GeoJSON 解析生成 Mesh、Raycaster 点击事件、AJAX 数据交互）。
+3. 详细的注释，解释如何将 D3 的投影与 Three.js 的几何体结合。
+
+请开始编写代码。

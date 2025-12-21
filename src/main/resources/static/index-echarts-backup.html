@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国旅游助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* 导航栏样式 */
+        .navbar {
+            width: 100%;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .navbar .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar .logo::before {
+            content: '🗺️';
+            margin-right: 10px;
+            font-size: 28px;
+        }
+
+        .navbar .user-status {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* 主体容器 */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+            width: 100%;
+        }
+
+        /* 左侧地图容器 */
+        .map-section {
+            width: 70%;
+            height: 100%;
+            background: #1a1a2e;
+            position: relative;
+        }
+
+        #map-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 右侧信息面板 */
+        .info-section {
+            width: 30%;
+            height: 100%;
+            background: #f8f9fa;
+            overflow-y: auto;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #info-panel {
+            padding: 30px;
+        }
+
+        .info-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 50px 20px;
+            color: #999;
+        }
+
+        .welcome-message .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .welcome-message p {
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        /* 城市列表样式 */
+        .city-list {
+            margin-top: 20px;
+        }
+
+        .city-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid #667eea;
+        }
+
+        .city-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .city-item h3 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .city-item p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* 景点列表样式 */
+        .attraction-list {
+            margin-top: 20px;
+        }
+
+        .attraction-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .attraction-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .attraction-item h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .attraction-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .attraction-rating {
+            color: #f39c12;
+            font-weight: bold;
+        }
+
+        .attraction-views {
+            color: #3498db;
+        }
+
+        /* 返回按钮 */
+        .back-button {
+            display: inline-block;
+            padding: 8px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 15px;
+            transition: background 0.3s;
+        }
+
+        .back-button:hover {
+            background: #5568d3;
+        }
+
+        /* 加载提示 */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+
+        /* 滚动条样式 */
+        .info-section::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .info-section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .info-section::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .info-section::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Modal 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 3% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 900px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 25px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            position: relative;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .modal-close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            transform: scale(1.2);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .modal-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .modal-stats {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .modal-stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+
+        .modal-stat-item .icon {
+            font-size: 20px;
+        }
+
+        .modal-description {
+            line-height: 1.8;
+            color: #555;
+            font-size: 15px;
+            margin-bottom: 25px;
+            text-align: justify;
+        }
+
+        .modal-comments {
+            margin-top: 30px;
+        }
+
+        .modal-comments h3 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .comment-item {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #999;
+        }
+
+        .comment-user {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .comment-content {
+            color: #555;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .no-comments {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        /* 城市按钮样式 */
+        .city-button {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 12px;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            color: #333;
+            text-align: left;
+        }
+
+        .city-button:hover {
+            background: #667eea;
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .city-button-name {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .city-button-desc {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        /* 景点卡片样式 */
+        .attraction-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .attraction-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .attraction-card-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+        }
+
+        .attraction-card-body {
+            padding: 15px;
+        }
+
+        .attraction-card-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .attraction-card-desc {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .attraction-card-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+
+        .attraction-card-rating {
+            color: #f39c12;
+            font-weight: bold;
+        }
+
+        .attraction-card-views {
+            color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <div class="navbar">
+        <div class="logo">中国旅游助手</div>
+        <div class="user-status">欢迎使用 | 在线</div>
+    </div>
+
+    <!-- 主体容器 -->
+    <div class="main-container">
+        <!-- 左侧地图 -->
+        <div class="map-section">
+            <div id="map-container"></div>
+        </div>
+
+        <!-- 右侧信息面板 -->
+        <div class="info-section">
+            <div id="info-panel">
+                <div class="welcome-message">
+                    <div class="icon">🗺️</div>
+                    <p>请选择省份查看详情</p>
+                    <p style="font-size: 14px; margin-top: 10px; color: #ccc;">
+                        探索中国各地的美丽风景
+                    </p>
+                </div>
+                <div style="padding: 0 30px; margin-top: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="city-button" style="margin: 0;" onclick="loadProvinceInfo('湖北省')">
+                            <div class="city-button-name">🌸 湖北省</div>
+                        </button>
+                        <button class="city-button" style="margin: 0;" onclick="loadProvinceInfo('北京市')">
+                            <div class="city-button-name">🏛️ 北京市</div>
+                        </button>
+                        <button class="city-button" style="margin: 0;" onclick="loadProvinceInfo('广东省')">
+                            <div class="city-button-name">🌴 广东省</div>
+                        </button>
+                        <button class="city-button" style="margin: 0;" onclick="loadProvinceInfo('四川省')">
+                            <div class="city-button-name">🌶️ 四川省</div>
+                        </button>
+                        <button class="city-button" style="margin: 0;" onclick="loadProvinceInfo('浙江省')">
+                            <div class="city-button-name">🏞️ 浙江省</div>
+                        </button>
+                        <button class="city-button" style="margin: 0;" onclick="loadProvinceInfo('江苏省')">
+                            <div class="city-button-name">🌺 江苏省</div>
+                        </button>
+                        <button class="city-button" style="margin: 0;" onclick="loadProvinceInfo('陕西省')">
+                            <div class="city-button-name">🏯 陕西省</div>
+                        </button>
+                        <button class="city-button" style="margin: 0;" onclick="loadProvinceInfo('云南省')">
+                            <div class="city-button-name">🌻 云南省</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 景点详情Modal -->
+    <div id="attractionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">景点详情</h2>
+                <span class="modal-close" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="modalBody" class="modal-body">
+                <!-- 动态内容将在这里显示 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入依赖 -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js"></script>
+
+    <script>
+        // 全局变量
+        let myChart;
+        let chinaGeoJSON;
+        let currentProvince = null;
+
+        // 省份名称到ID的映射
+        const provinceNameToId = {
+            '北京': 2,
+            '北京市': 2,
+            '湖北': 1,
+            '湖北省': 1,
+            '广东': 3,
+            '广东省': 3,
+            '四川': 4,
+            '四川省': 4,
+            '浙江': 5,
+            '浙江省': 5,
+            '江苏': 6,
+            '江苏省': 6,
+            '陕西': 7,
+            '陕西省': 7,
+            '云南': 8,
+            '云南省': 8
+        };
+
+        // 初始化地图
+        function initMap() {
+            console.log('=== 开始初始化地图 ===');
+            myChart = echarts.init(document.getElementById('map-container'));
+            console.log('ECharts 实例创建成功');
+
+            // 加载中国地图GeoJSON数据
+            $.getJSON('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json', function(geoJson) {
+                console.log('GeoJSON 数据加载成功');
+                chinaGeoJSON = geoJson;
+                echarts.registerMap('china', geoJson);
+
+                // 配置3D地图
+                const option = {
+                    backgroundColor: '#1a1a2e',
+                    tooltip: {
+                        show: true,
+                        formatter: function(params) {
+                            return params.name + '<br/>点击查看详情';
+                        }
+                    },
+                    visualMap: {
+                        show: false,
+                        min: 0,
+                        max: 1,
+                        inRange: {
+                            color: ['#313695', '#4575b4', '#74add1', '#abd9e9']
+                        }
+                    },
+                    geo3D: {
+                        map: 'china',
+                        roam: true,
+                        // 启用选中功能
+                        selectedMode: 'single',
+                        select: {
+                            label: {
+                                show: true,
+                                color: '#fff',
+                                fontSize: 18,
+                                fontWeight: 'bold'
+                            },
+                            itemStyle: {
+                                color: '#e74c3c',
+                                opacity: 1
+                            }
+                        },
+                        itemStyle: {
+                            color: '#2c3e50',
+                            opacity: 0.9,
+                            borderWidth: 1,
+                            borderColor: '#1abc9c'
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                color: '#fff',
+                                fontSize: 16,
+                                fontWeight: 'bold'
+                            },
+                            itemStyle: {
+                                color: '#f39c12',
+                                opacity: 1
+                            }
+                        },
+                        light: {
+                            main: {
+                                intensity: 1.2,
+                                shadow: true,
+                                shadowQuality: 'high',
+                                alpha: 40
+                            },
+                            ambient: {
+                                intensity: 0.3
+                            }
+                        },
+                        viewControl: {
+                            distance: 80,
+                            alpha: 45,
+                            beta: 0,
+                            autoRotate: false,
+                            rotateSensitivity: 1,
+                            zoomSensitivity: 1,
+                            panSensitivity: 1,
+                            minAlpha: 5,
+                            maxAlpha: 90
+                        },
+                        shading: 'realistic',
+                        realisticMaterial: {
+                            roughness: 0.6,
+                            metalness: 0
+                        },
+                        postEffect: {
+                            enable: true,
+                            bloom: {
+                                enable: true,
+                                intensity: 0.1
+                            },
+                            SSAO: {
+                                enable: true,
+                                radius: 2
+                            }
+                        },
+                        regionHeight: 3
+                    }
+                };
+
+                myChart.setOption(option);
+
+                console.log('ECharts 地图配置完成，开始监听点击事件');
+
+                // ========== 方案：使用 geo3D 的 selectchanged 事件 ==========
+                let lastClickTime = 0;
+                let lastClickedName = null;
+                
+                // 监听 geo3D 的选中事件
+                myChart.on('selectchanged', function(params) {
+                    console.log('>>> selectchanged 事件触发 <<<', params);
+                    
+                    if (params && params.selected && params.selected.length > 0) {
+                        const selectedRegion = params.selected[0];
+                        if (selectedRegion.name) {
+                            console.log('✅ 选中的省份:', selectedRegion.name);
+                            loadProvinceInfo(selectedRegion.name);
+                        }
+                    }
+                });
+                
+                // 备用方案：监听双击事件
+                myChart.on('dblclick', function(params) {
+                    console.log('>>> 双击事件触发 <<<', params);
+                    if (params && params.name) {
+                        console.log('✅ 双击的省份:', params.name);
+                        loadProvinceInfo(params.name);
+                    }
+                });
+                
+                // 备用方栈2：监听鼠标移动 + 点击组合
+                let hoveredProvince = null;
+                
+                myChart.on('mouseover', function(params) {
+                    if (params && params.name) {
+                        hoveredProvince = params.name;
+                        console.log('鼠标悬停:', params.name);
+                    }
+                });
+                
+                myChart.on('mouseout', function(params) {
+                    // 不清空 hoveredProvince，保留最后一次悬停的省份
+                });
+                
+                // 监听点击事件（尝试所有可能的事件）
+                myChart.on('click', function(params) {
+                    console.log('>>> click 事件触发 <<<', params);
+                    
+                    const now = Date.now();
+                    const provinceName = params.name || hoveredProvince;
+                    
+                    if (provinceName) {
+                        // 双击检测：如果300ms内点击同一个省份两次
+                        if (lastClickedName === provinceName && (now - lastClickTime) < 300) {
+                            console.log('✅ 检测到双击:', provinceName);
+                            loadProvinceInfo(provinceName);
+                            lastClickTime = 0;
+                            lastClickedName = null;
+                        } else {
+                            // 单击：记录并等待下一次点击
+                            console.log('单击记录:', provinceName, '（再次点击以加载信息）');
+                            lastClickTime = now;
+                            lastClickedName = provinceName;
+                            
+                            // 显示提示
+                            $('#info-panel').html(`
+                                <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 24px; margin-bottom: 10px;">👆</div>
+                                    <div style="font-size: 16px; color: #2e7d32; font-weight: bold;">
+                                        您选中了：${provinceName}
+                                    </div>
+                                    <div style="font-size: 14px; color: #66bb6a; margin-top: 10px;">
+                                        请<strong>再次点击</strong>该省份以查看详情
+                                    </div>
+                                </div>
+                            `);
+                        }
+                    } else {
+                        console.log('⚠️ 未检测到省份名称');
+                    }
+                });
+                // ========================================================
+
+                // 窗口大小改变时重新渲染
+                window.addEventListener('resize', function() {
+                    myChart.resize();
+                });
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                console.error('GeoJSON 加载失败:', textStatus, errorThrown);
+                alert('GeoJSON 地图数据加载失败，请检查网络连接或稍后重试');
+            });
+        }
+
+        // 加载省份信息
+        function loadProvinceInfo(provinceName) {
+            console.log('点击的省份名称:', provinceName);
+            
+            // 直接查找省份 ID
+            let provinceId = provinceNameToId[provinceName];
+            
+            // 如果直接查找不到，尝试模糊匹配
+            if (!provinceId) {
+                for (let key in provinceNameToId) {
+                    if (provinceName.includes(key) || key.includes(provinceName)) {
+                        provinceId = provinceNameToId[key];
+                        currentProvince = key.replace('省', '').replace('市', '');
+                        break;
+                    }
+                }
+            } else {
+                currentProvince = provinceName.replace('省', '').replace('市', '');
+            }
+            
+            console.log('解析后的省份ID:', provinceId, '省份名:', currentProvince);
+
+            if (!provinceId) {
+                $('#info-panel').html(`
+                    <div class="info-title">${provinceName}</div>
+                    <p style="color: #999; text-align: center; padding: 50px 20px;">
+                        暂无该省份的详细信息<br/>
+                        <small>请尝试点击其他省份：湖北、北京、广东、四川、浙江、江苏、陕西、云南</small>
+                    </p>
+                `);
+                return;
+            }
+
+            // 显示加载状态
+            $('#info-panel').html('<div class="loading">加载中...</div>');
+
+            // 调用API获取城市列表
+            $.ajax({
+                url: `/api/cities/${provinceId}`,
+                method: 'GET',
+                success: function(response) {
+                    console.log('API返回数据:', response);
+                    if (response.code === 200 && response.data) {
+                        displayCities(currentProvince, response.data);
+                    } else {
+                        $('#info-panel').html('<p style="color: red;">加载失败：' + (response.msg || '未知错误') + '</p>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('API调用失败:', status, error, xhr);
+                    $('#info-panel').html(`
+                        <p style="color: red; padding: 20px;">
+                            网络错误，请稍后重试<br/>
+                            <small>错误信息: ${error}</small>
+                        </p>
+                    `);
+                }
+            });
+        }
+
+        // 显示城市列表（使用按钮样式）
+        function displayCities(provinceName, cities) {
+            let html = `
+                <div class="info-title">${provinceName}省 - 城市列表</div>
+                <div class="city-list">
+            `;
+
+            cities.forEach(city => {
+                const desc = city.description || '暂无描述';
+                const shortDesc = desc.length > 50 ? desc.substring(0, 50) + '...' : desc;
+                
+                html += `
+                    <button class="city-button" data-city-id="${city.id}" data-city-name="${city.name}">
+                        <div class="city-button-name">${city.name}</div>
+                        <div class="city-button-desc">${shortDesc}</div>
+                    </button>
+                `;
+            });
+
+            html += '</div>';
+            $('#info-panel').html(html);
+
+            // 绑定城市按钮点击事件
+            $('.city-button').click(function() {
+                const cityId = $(this).data('city-id');
+                const cityName = $(this).data('city-name');
+                loadCityAttractions(cityId, cityName);
+            });
+        }
+
+        // 加载城市景点
+        function loadCityAttractions(cityId, cityName) {
+            $('#info-panel').html('<div class="loading">加载景点中...</div>');
+
+            $.ajax({
+                url: `/api/attractions/top/${cityId}?limit=10`,
+                method: 'GET',
+                success: function(response) {
+                    if (response.code === 200 && response.data) {
+                        displayAttractions(cityName, response.data);
+                    } else {
+                        $('#info-panel').html('<p style="color: red;">加载景点失败</p>');
+                    }
+                },
+                error: function() {
+                    $('#info-panel').html('<p style="color: red;">网络错误，请稍后重试</p>');
+                }
+            });
+        }
+
+        // 显示景点列表（使用卡片样式）
+        function displayAttractions(cityName, attractions) {
+            let html = `
+                <button class="back-button" onclick="loadProvinceInfo('${currentProvince}')">← 返回城市列表</button>
+                <div class="info-title">${cityName} - 热门景点</div>
+                <div class="attraction-list">
+            `;
+
+            if (attractions && attractions.length > 0) {
+                attractions.forEach((attraction, index) => {
+                    const desc = attraction.description || '暂无描述';
+                    const shortDesc = desc.length > 60 ? desc.substring(0, 60) + '...' : desc;
+                    
+                    html += `
+                        <div class="attraction-card" data-attraction-id="${attraction.id}">
+                            <div class="attraction-card-image">🏛️</div>
+                            <div class="attraction-card-body">
+                                <div class="attraction-card-title">${index + 1}. ${attraction.name}</div>
+                                <div class="attraction-card-desc">${shortDesc}</div>
+                                <div class="attraction-card-stats">
+                                    <span class="attraction-card-rating">⭐ ${attraction.rating || 'N/A'}</span>
+                                    <span class="attraction-card-views">👁️ ${attraction.viewCount || 0}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<p style="text-align: center; color: #999; padding: 30px;">暂无景点数据</p>';
+            }
+
+            html += '</div>';
+            $('#info-panel').html(html);
+
+            // 绑定景点卡片点击事件 - 打开Modal
+            $('.attraction-card').click(function() {
+                const attractionId = $(this).data('attraction-id');
+                openAttractionModal(attractionId);
+            });
+        }
+
+        // 打开景点详情Modal
+        function openAttractionModal(attractionId) {
+            // 显示Modal并加载数据
+            $('#attractionModal').fadeIn(300);
+            $('#modalBody').html('<div class="loading" style="padding: 50px; text-align: center;">加载详情中...</div>');
+
+            $.ajax({
+                url: `/api/attractions/${attractionId}/detail`,
+                method: 'GET',
+                success: function(response) {
+                    if (response.code === 200 && response.data) {
+                        displayAttractionInModal(response.data);
+                    } else {
+                        $('#modalBody').html('<p style="color: red; text-align: center; padding: 50px;">加载详情失败</p>');
+                    }
+                },
+                error: function() {
+                    $('#modalBody').html('<p style="color: red; text-align: center; padding: 50px;">网络错误，请稍后重试</p>');
+                }
+            });
+        }
+
+        // 在Modal中显示景点详情
+        function displayAttractionInModal(data) {
+            const attraction = data.attraction;
+            const comments = data.comments || [];
+
+            // 设置Modal标题
+            $('#modalTitle').text(attraction.name);
+
+            // 构建Modal内容
+            let html = '';
+
+            // 景点图片（如果有）
+            if (attraction.imageUrl && attraction.imageUrl.startsWith('http')) {
+                html += `<img src="${attraction.imageUrl}" alt="${attraction.name}" class="modal-image">`;
+            }
+
+            // 景点统计信息
+            html += `
+                <div class="modal-stats">
+                    <div class="modal-stat-item">
+                        <span class="icon">⭐</span>
+                        <span>评分: <strong>${attraction.rating || 'N/A'}</strong></span>
+                    </div>
+                    <div class="modal-stat-item">
+                        <span class="icon">👁️</span>
+                        <span>浏览: <strong>${attraction.viewCount || 0}</strong> 次</span>
+                    </div>
+                    <div class="modal-stat-item">
+                        <span class="icon">💬</span>
+                        <span>评论: <strong>${comments.length}</strong> 条</span>
+                    </div>
+                </div>
+            `;
+
+            // 景点描述
+            html += `
+                <div class="modal-description">
+                    ${attraction.description || '暂无详细描述'}
+                </div>
+            `;
+
+            // 评论列表
+            html += '<div class="modal-comments">';
+            html += `<h3>游客评论 (${comments.length})</h3>`;
+
+            if (comments.length > 0) {
+                comments.forEach(comment => {
+                    const createTime = comment.createTime ? new Date(comment.createTime).toLocaleString('zh-CN') : '未知时间';
+                    html += `
+                        <div class="comment-item">
+                            <div class="comment-header">
+                                <span class="comment-user">用户 #${comment.userId}</span>
+                                <span class="comment-time">${createTime}</span>
+                            </div>
+                            <div class="comment-content">${comment.content}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<div class="no-comments">暂无评论，快来抢沙发吧~</div>';
+            }
+
+            html += '</div>';
+
+            $('#modalBody').html(html);
+        }
+
+        // 显示省份选择器（当自动检测失败时）
+        function showProvinceSelector() {
+            const provinces = ['湖北省', '北京市', '广东省', '四川省', '浙江省', '江苏省', '陕西省', '云南省'];
+            
+            let html = `
+                <div class="info-title">请选择省份</div>
+                <p style="color: #666; margin-bottom: 20px;">点击下方按钮选择您想查看的省份：</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            `;
+            
+            provinces.forEach(province => {
+                html += `
+                    <button class="city-button" style="margin: 0;" onclick="loadProvinceInfo('${province}')">
+                        <div class="city-button-name">${province}</div>
+                    </button>
+                `;
+            });
+            
+            html += '</div>';
+            $('#info-panel').html(html);
+        }
+        function closeModal() {
+            $('#attractionModal').fadeOut(300);
+        }
+
+        // 页面加载完成后初始化
+        $(document).ready(function() {
+            console.log('=== 页面加载完成 ===');
+            console.log('jQuery 版本:', $.fn.jquery);
+            console.log('ECharts 是否加载:', typeof echarts !== 'undefined');
+            console.log('ECharts 版本:', echarts.version);
+            
+            if (typeof echarts === 'undefined') {
+                alert('ECharts 加载失败，请检查网络连接');
+                return;
+            }
+            
+            initMap();
+
+            // 点击Modal外部区域关闭Modal
+            $('#attractionModal').click(function(event) {
+                if (event.target.id === 'attractionModal') {
+                    closeModal();
+                }
+            });
+
+            // ESC键关闭Modal
+            $(document).keydown(function(event) {
+                if (event.key === 'Escape') {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
