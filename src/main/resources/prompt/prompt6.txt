@@ -1,0 +1,38 @@
+# Role
+你是一名资深的前端可视化专家，精通 Three.js 和 WebGL。我目前有一个基于 Three.js 的中国地图项目（代码见下文），现在的效果是科技风的深蓝色单色地图。
+
+# Goal
+请你帮我修改现有的 `index.html` 代码，**保留所有的业务逻辑（AJAX请求、Raycaster点击事件、数据映射逻辑）完全不变**，仅对**视觉样式（Visual Styles）**进行重构。
+
+我的目标是实现类似“政区图”的彩色风格，具体需求如下：
+
+# Visual Requirements (视觉需求详情)
+
+1.  **省份颜色区分 (Distinct Colors)：**
+    * 目前所有省份都是深蓝色。请改为**多彩区分**风格。
+    * 请定义一个包含 10-15 种明亮颜色的**调色板 (Palette)**（例如：#F56C6C, #E6A23C, #67C23A, #409EFF, #9B59B6, #1ABC9C 等）。
+    * 在 `createProvinceMesh` 函数中，根据省份名称的哈希值或索引，从调色板中为每个省份分配一个固定的颜色。
+    * 材质请继续使用 `MeshLambertMaterial` 或 `MeshPhongMaterial`，保持一定的立体感，但颜色要丰富。
+
+2.  **添加省份名称标签 (Text Labels)：**
+    * **核心需求：** 每个省份板块上方必须显示该省份的名称（如“湖北”、“北京”）。
+    * **技术实现：** 请编写一个 `createLabel(text, position)` 函数。使用 HTML5 Canvas 绘制文字，生成 `THREE.CanvasTexture`，然后应用在 `THREE.Sprite` (精灵) 上。
+    * **位置计算：** 在生成省份 Mesh 后，调用 `geometry.computeBoundingBox()` 计算中心点 (center)，将 Label 放置在中心点上方一点的位置。
+
+3.  **相机与视角调整 (Camera View)：**
+    * 现在的视角比较垂直（俯视）。请调整 `camera.position` 和 `controls` 设置，使其初始视角更具“平视感”或“透视感”（类似 45度-60度角），能更清楚地看到板块的侧面厚度。
+    * 调整 `controls.maxPolarAngle`，允许用户把地图放得更平进行观察。
+
+4.  **背景样式 (Background)：**
+    * 将背景色改为**纯黑色 (#000000)** 或 **极深的夜空黑**，以衬托彩色的地图板块。
+
+# Constraints (严格约束)
+* **禁止修改** `loadChinaMap` 中的 AJAX 请求逻辑。
+* **禁止修改** `handleClick` 和 `selectProvince` 中的点击交互逻辑（Raycaster 必须保持正常工作）。
+* **禁止修改** 右侧 `#info-panel` 的 DOM 结构和 jQuery 逻辑。
+* **禁止引入新的 JS 库**（仅使用当前已有的 three.min.js, OrbitControls.js, d3.min.js, jquery.min.js）。
+
+# Input Code
+下面是我当前的 `index.html` 代码，请基于此进行修改：
+
+[这里粘贴你当前的 index.html 代码]
