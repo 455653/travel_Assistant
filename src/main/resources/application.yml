@@ -60,10 +60,10 @@ amap:
 # 阿里云 OSS 配置
 aliyun:
   oss:
-    endpoint:
+    endpoint: https://oss-cn-hangzhou.aliyuncs.com
     region: cn-hangzhou
-    access-key-id:
-    access-key-secret:
+    access-key-id: ${access-key-id}
+    access-key-secret: ${access-key-secret}
     bucket-name: travel-assistant-2025
 
 # DeepSeek AI配置

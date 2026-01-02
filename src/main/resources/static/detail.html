@@ -745,6 +745,9 @@
             // 加载景点详情
             loadAttractionDetail();
 
+            // 加载评论列表
+            loadComments();
+
             // Tab切换事件
             $('.tab-item').click(function() {
                 const tabName = $(this).data('tab');
@@ -941,38 +944,9 @@
             } else {
                 $('#guide-content').html('<div class="placeholder"><div class="placeholder-icon">📝</div><div>暂无旅游攻略</div></div>');
             }
-
-            // 显示评论
-            displayComments(comments);
         }
 
-        // 显示评论列表
-        function displayComments(comments) {
-            const commentList = $('#comments-list');
-            commentList.empty();
-
-            if (comments && comments.length > 0) {
-                comments.forEach(comment => {
-                    const imageHtml = comment.imageUrl
-                        ? `<img src="${comment.imageUrl}" class="comment-image" alt="评论图片">`
-                        : '';
-
-                    const commentCard = `
-                        <div class="comment-card">
-                            <div class="comment-header">
-                                <div class="comment-user">👤 用户 ${comment.userId}</div>
-                                <div class="comment-time">${formatDate(comment.createTime)}</div>
-                            </div>
-                            <div class="comment-content">${comment.content || ''}</div>
-                            ${imageHtml}
-                        </div>
-                    `;
-                    commentList.append(commentCard);
-                });
-            } else {
-                commentList.html('<div style="text-align:center;padding:40px;color:#999;">暂无评论</div>');
-            }
-        }
+        // 显示评论列表（已由 loadComments 调用）
 
         // 图片上传预览
         $('#comment-image').change(function(e) {
@@ -981,6 +955,7 @@
 
             if (file.size > 5 * 1024 * 1024) {
                 alert('图片大小不能超过 5MB');
+                $(this).val('');
                 return;
             }
 
@@ -994,15 +969,18 @@
                 processData: false,
                 contentType: false,
                 success: function(response) {
+                    console.log('图片上传响应:', response);
                     if (response.code === 200) {
                         $('#hidden-image-url').val(response.data);
                         $('#preview-img').attr('src', response.data);
                         $('#image-preview').addClass('show');
+                        console.log('图片URL已保存:', response.data);
                     } else {
                         alert('上传失败：' + response.msg);
                     }
                 },
-                error: function() {
+                error: function(xhr) {
+                    console.error('图片上传失败:', xhr);
                     alert('图片上传失败，请重试');
                 }
             });
@@ -1013,6 +991,7 @@
             $('#comment-image').val('');
             $('#hidden-image-url').val('');
             $('#image-preview').removeClass('show');
+            $('#preview-img').attr('src', '');
         });
 
         // 提交评论
@@ -1021,43 +1000,129 @@
             const imageUrl = $('#hidden-image-url').val();
             const user = JSON.parse(localStorage.getItem('user'));
 
+            console.log('准备提交评论');
+            console.log('内容:', content);
+            console.log('图片URL:', imageUrl);
+            console.log('景点ID:', attractionId);
+            console.log('用户:', user);
+
             if (!content) {
                 alert('请输入评论内容');
                 return;
             }
 
-            $(this).prop('disabled', true);
+            if (!attractionId) {
+                alert('景点ID获取失败');
+                return;
+            }
+
+            if (!user || !user.id) {
+                alert('请先登录');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const commentData = {
+                attractionId: parseInt(attractionId),
+                userId: user.id,
+                content: content,
+                imageUrl: imageUrl || null
+            };
+
+            console.log('发送的评论数据:', commentData);
+
+            $(this).prop('disabled', true).text('提交中...');
 
             $.ajax({
                 url: '/api/comments',
                 method: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({
-                    attractionId: attractionId,
-                    userId: user.id,
-                    content: content,
-                    imageUrl: imageUrl || null
-                }),
+                data: JSON.stringify(commentData),
                 success: function(response) {
+                    console.log('评论提交响应:', response);
                     if (response.code === 200) {
                         alert('评论发表成功！');
                         $('#comment-content').val('');
                         $('#comment-image').val('');
                         $('#hidden-image-url').val('');
                         $('#image-preview').removeClass('show');
-                        loadAttractionDetail();
+                        loadComments();
                     } else {
                         alert('评论失败：' + response.msg);
                     }
                 },
-                error: function() {
+                error: function(xhr) {
+                    console.error('评论提交失败:', xhr);
                     alert('评论发表失败，请重试');
                 },
                 complete: function() {
-                    $('#submit-comment-btn').prop('disabled', false);
+                    $('#submit-comment-btn').prop('disabled', false).text('发表评论');
                 }
             });
         });
+
+        // 加载评论列表
+        function loadComments() {
+            if (!attractionId) {
+                console.warn('attractionId 为空，无法加载评论');
+                return;
+            }
+
+            $.ajax({
+                url: '/api/comments/list',
+                method: 'GET',
+                data: { attractionId: attractionId },
+                success: function(response) {
+                    console.log('评论列表响应:', response);
+                    if (response.code === 200) {
+                        displayComments(response.data);
+                    } else {
+                        console.error('加载评论失败:', response.msg);
+                    }
+                },
+                error: function(xhr) {
+                    console.error('加载评论失败:', xhr);
+                }
+            });
+        }
+
+        // 显示评论列表
+        function displayComments(comments) {
+            const commentList = $('#comments-list');
+            commentList.empty();
+
+            if (comments && comments.length > 0) {
+                comments.forEach(comment => {
+                    const imageHtml = comment.imageUrl
+                        ? `<img src="${comment.imageUrl}" class="comment-image" alt="评论图片" onclick="window.open('${comment.imageUrl}', '_blank')">`
+                        : '';
+
+                    const username = comment.username || '匿名用户';
+                    const createTime = comment.createTime ? formatDate(comment.createTime) : '';
+
+                    const commentCard = `
+                        <div class="comment-card">
+                            <div class="comment-header">
+                                <div class="comment-user">👤 ${username}</div>
+                                <div class="comment-time">${createTime}</div>
+                            </div>
+                            <div class="comment-content">${escapeHtml(comment.content)}</div>
+                            ${imageHtml}
+                        </div>
+                    `;
+                    commentList.append(commentCard);
+                });
+            } else {
+                commentList.html('<div style="text-align:center;padding:40px;color:#999;">暂无评论，快来发表第一条评论吧！</div>');
+            }
+        }
+
+        // HTML转义函数
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
         // 格式化日期
         function formatDate(dateStr) {

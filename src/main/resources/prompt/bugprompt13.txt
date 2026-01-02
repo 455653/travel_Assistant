@@ -1,0 +1,47 @@
+# Role
+你是一名资深的 Java Spring Boot 全栈开发工程师。
+我正在开发“旅游助手”项目。目前 OSS 图片上传功能已完成，**但发现了一个严重 Bug**：用户提交评论后，数据库 `comment` 表中**没有任何数据写入**（既没有文字内容，也没有图片 URL）。
+
+# Goal
+请修复评论提交失败的 Bug，并实现评论展示功能。
+
+# Context (现有代码情况)
+1.  **数据库**：`comment` 表包含 `id`, `attraction_id`, `user_id`, `content`, `image_url`。
+2.  **前端**：`detail.html` 使用 jQuery。已有一个隐藏域 `<input type="hidden" id="hidden-image-url">` 存储 OSS 返回的图片链接。
+3.  **现状**：点击提交按钮后，后端似乎没有正确接收到数据，或者 Mapper 插入语句有问题，导致整条记录丢失。
+
+# Task 1: 修复评论提交功能 (Fix Save Logic)
+请全面检查并修改 `detail.html`, `CommentController.java`, 和 `CommentMapper.xml`，确保数据能流转并存入数据库。
+
+1.  **前端 (`detail.html`)**:
+    * 修改 `submitComment` 函数：
+        * 正确获取 `attractionId` (从 URL 或页面元素)。
+        * 正确获取 `content` (从 textarea)。
+        * 正确获取 `imageUrl` (从隐藏域 `#hidden-image-url`)。
+        * **关键点**：构造 JSON 对象，并使用 `JSON.stringify()` 发送 POST 请求，确保 `contentType: 'application/json'`。
+2.  **后端 Controller (`CommentController.java`)**:
+    * 修改 `addComment` 接口：
+        * 确保使用 `@RequestBody Comment comment` 接收前端的 JSON 数据。
+        * (如果尚未实现) 补充设置当前登录用户的 ID (`user_id`)。
+        * 打印日志或断点调试，确保接收到的 `comment` 对象中 `content` 和 `imageUrl` 都不为空。
+3.  **后端 Mapper (`CommentMapper.xml`)**:
+    * **重写 `<insert id="insert">`**：确保 SQL 语句包含 `attraction_id`, `user_id`, `content`, `image_url` 四个字段，且 MyBatis 占位符 `#{field}` 写法无误。
+
+# Task 2: 实现游客评论展示 (Show Comments)
+在 `detail.html` 页面展示当前景点的所有评论。
+
+1.  **后端 (`CommentController.java`)**:
+    * 新增接口 `GET /api/comments/list?attractionId={id}`。
+2.  **后端 (`CommentMapper.xml`)**:
+    * 新增 `<select id="selectByAttractionId">`。
+    * **关联查询**：必须 `JOIN users` 表，获取用户名 (`username`)。
+    * 返回结果需包含：用户名、头像(如有)、评论内容、**评论图片(image_url)**、评分、时间。
+3.  **前端 (`detail.html`)**:
+    * 在 Tab 中新增 `<div id="comment-list">`。
+    * 编写 `loadComments` 函数：使用 AJAX 获取数据并渲染。
+    * **样式要求**：如果 `image_url` 存在，在文字下方显示图片缩略图（设置 `max-width: 200px` 防止过大）。
+
+# Constraints
+* **不要修改** OSS 上传相关的代码（`UploadController`）。
+* 保持 RESTful 风格。
+* 请直接给出修改后的完整代码块（Controller, Mapper XML, HTML/JS），并标注文件名。
