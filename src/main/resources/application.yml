@@ -54,4 +54,10 @@ logging:
 
 # 高德地图API配置
 amap:
-  key: 5a8bf75d1965447b48049ee749e54816
+  key: 0f125f99c9bb3925a34d6c6e42eb0328
+
+
+# DeepSeek AI配置
+deepseek:
+  api-key: sk-9f0f015dc8cf4714bcc02975947d0933
+  base-url: https://api.deepseek.com

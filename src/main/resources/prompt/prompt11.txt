@@ -1,0 +1,77 @@
+# Role
+你是一名资深的 Java Spring Boot 全栈开发工程师。
+我现有的项目是一个“中国旅游助手”系统（后端：Spring Boot 3 + MyBatis + MySQL；前端：原生 HTML + jQuery + CSS）。
+目前 `detail.html` 页面已经展示了景点详情、天气和评论。
+
+# Goal
+请在 `detail.html` 页面增加一个功能：**“AI 定制攻略”**。
+该功能允许用户输入人数和日期，调用 **DeepSeek API** 生成一份针对当前景点的详细旅游计划。
+
+# Context (现有代码结构)
+1.  **前端**：`detail.html` 使用了 Tab 选项卡布局 (`.tab-item`, `.tab-content`)。
+2.  **后端**：已经有 `AttractionController`, `AttractionService`。
+3.  **API**：我将提供 DeepSeek 的 CURL 示例，请将其转换为 Java 代码。
+
+# Requirements (具体开发任务)
+
+请分步骤为我生成以下代码：
+
+## 1. 后端配置 (Configuration)
+* 在 `application.yml` 中添加 DeepSeek API Key 和 Base URL 的配置项,我的APIkey为：sk-2bc994bbc0a24d8e8c9524861487fb08
+* 在 `pom.xml` 中添加必要的 HTTP 客户端依赖（推荐使用 OkHttp 或 Spring 自带的 RestTemplate/WebClient，请选择最稳健的一个）。
+
+## 2. 后端服务层 (DeepSeekService)
+创建一个 `DeepSeekService.java`，实现以下逻辑：
+* **方法签名**：`public String generateGuide(String attractionName, int peopleCount, String startDate, String endDate)`
+* **Prompt 构建**：在 Java 代码中构建发给 AI 的系统提示词和用户提示词。
+    * *System Prompt*: "你是一个专业的资深导游，擅长规划中国旅游路线。"
+    * *User Prompt*: "请为我规划一份去【{attractionName}】的旅游攻略。
+        人数：{peopleCount}人。
+        时间：{startDate} 到 {endDate}。
+        请包含以下内容：
+        1. 每日详细路线推荐。
+        2. 必打卡的具体景点。
+        3. 酒店住宿区域推荐。
+        4. 每日三餐美食推荐（特色菜）。
+        请使用 Markdown 格式输出，保持条理清晰，语气热情。"
+* **API 调用**：根据以下 CURL 格式发送 POST 请求，并解析返回的 JSON，提取 `content` 内容。
+    ```bash
+    curl [https://api.deepseek.com/chat/completions](https://api.deepseek.com/chat/completions) \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer YOUR_API_KEY" \
+      -d '{
+            "model": "deepseek-chat",
+            "messages": [
+              {"role": "system", "content": "..."},
+              {"role": "user", "content": "..."}
+            ],
+            "stream": false
+          }'
+    ```
+
+## 3. 后端接口层 (AiController)
+创建一个新的 Controller 或在现有的 Controller 中添加接口：
+* `GET /api/ai/generate-guide`
+* **参数**：`attractionId` (用于查名字), `people` (人数), `startDate`, `endDate`。
+* **逻辑**：根据 ID 查出景点名称 -> 调用 Service -> 返回 `Result<String>` (Markdown 文本)。
+
+## 4. 前端界面 (detail.html 修改)
+请基于现有的 Tab 风格进行修改：
+* **新增 Tab**：在“游客评论”后面增加一个 Tab，标题为“🤖 AI 定制攻略”。
+* **Tab 内容区**：
+    * **表单**：包含“出游人数”(Input type number)、“开始日期”(Input type date)、“结束日期”(Input type date)。
+    * **按钮**：一个美观的“生成攻略”按钮。
+    * **展示区**：一个用于显示 Markdown 结果的 `div`。请引入 `marked.js` (CDN: `https://cdn.jsdelivr.net/npm/marked/marked.min.js`) 来将 AI 返回的 Markdown 渲染为漂亮的 HTML。
+    * **Loading 状态**：因为 AI 生成较慢，点击按钮后需要显示“正在规划中...”的转圈动画，且按钮不可点击。
+
+## 5. 前端逻辑 (JavaScript)
+* 编写 jQuery AJAX 请求逻辑。
+* **景点名称获取**：直接使用当前页面已有的景点信息（当前页面已经通过 `loadAttractionDetail` 获取了景点数据，请复用其中的 `attraction.id` 或 `attraction.name`）。
+* 处理成功返回和错误提示。
+
+# Constraints
+* 保持现有的 CSS 蓝紫色调风格。
+* Java 代码需具备基本的异常处理（如 API 调用超时、Key 错误）。
+* 不需要 Stream 流式输出，使用普通的非流式请求即可。
+
+请直接给出完整的代码实现，不需要过多的解释。

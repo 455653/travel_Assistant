@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>景点详情 - 中国旅游助手</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -199,84 +200,105 @@
             white-space: pre-line;
         }
 
-        .placeholder {
-            text-align: center;
-            padding: 80px 20px;
-            color: #999;
-            font-size: 18px;
+        /* AI攻略表单 */
+        .ai-form {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
         }
 
-        .placeholder-icon {
-            font-size: 60px;
+        .form-group {
             margin-bottom: 20px;
         }
 
-        /* 评论卡片 */
-        .comment-list {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
         }
 
-        .comment-card {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            border-left: 4px solid #667eea;
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
             transition: all 0.3s ease;
         }
 
-        .comment-card:hover {
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
-            transform: translateX(5px);
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .comment-header {
+        .form-row {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
+            gap: 20px;
         }
 
-        .comment-user {
-            font-weight: bold;
-            color: #667eea;
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
             font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .comment-rating {
-            color: #f39c12;
-            font-size: 14px;
+        .generate-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
 
-        .comment-content {
-            color: #555;
-            line-height: 1.8;
-            font-size: 15px;
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
-        .no-comments {
+        .ai-result {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            min-height: 200px;
+            display: none;
+        }
+
+        .ai-result.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .loading-spinner {
             text-align: center;
-            padding: 60px 20px;
-            color: #999;
+            padding: 40px;
+            display: none;
         }
 
-        /* 加载动画 */
-        .loading {
-            text-align: center;
-            padding: 100px 20px;
-            color: #667eea;
-            font-size: 18px;
+        .loading-spinner.show {
+            display: block;
         }
 
-        .spinner {
-            border: 4px solid rgba(102, 126, 234, 0.1);
+        .spinner-icon {
+            border: 4px solid #f3f3f3;
             border-top: 4px solid #667eea;
             border-radius: 50%;
             width: 50px;
             height: 50px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            margin: 0 auto 15px;
         }
 
         @keyframes spin {
@@ -284,7 +306,63 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* 天气卡片样式 */
+        .loading-text {
+            font-size: 16px;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        /* Markdown 渲染样式 */
+        .content-text h1,
+        .content-text h2,
+        .content-text h3 {
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .content-text h1 {
+            font-size: 24px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .content-text h2 {
+            font-size: 20px;
+        }
+
+        .content-text h3 {
+            font-size: 18px;
+        }
+
+        .content-text ul,
+        .content-text ol {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        .content-text li {
+            margin-bottom: 8px;
+        }
+
+        .content-text p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .content-text strong {
+            color: #764ba2;
+            font-weight: 600;
+        }
+
+        .content-text code {
+            background: #f5f7fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* 天气卡片 */
         .weather-container {
             display: flex;
             gap: 15px;
@@ -392,9 +470,10 @@
         <div id="tab-section" class="tab-section" style="display: none;">
             <div class="tab-header">
                 <div class="tab-item active" data-tab="intro">📖 景点介绍</div>
-                <div class="tab-item" data-tab="guide">🗺️ 旅游攻略</div>
+                <div class="tab-item" data-tab="guide">🗺️ 游览攻略</div>
                 <div class="tab-item" data-tab="weather">🌤️ 天气</div>
                 <div class="tab-item" data-tab="comments">💬 游客评论</div>
+                <div class="tab-item" data-tab="ai-guide">🤖 AI 定制攻略</div>
             </div>
 
             <!-- Tab内容区 -->
@@ -418,15 +497,50 @@
                 </div>
             </div>
 
+            <!-- 游客评论 -->
             <div class="tab-content" id="tab-comments">
-                <div class="comment-list" id="comment-list"></div>
+                <div id="comments-list"></div>
+            </div>
+
+            <!-- AI定制攻略 -->
+            <div class="tab-content" id="tab-ai-guide">
+                <div class="ai-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">👥 出游人数</label>
+                            <input type="number" class="form-input" id="people-count" min="1" max="99" value="2" placeholder="请输入人数">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">📅 开始日期</label>
+                            <input type="date" class="form-input" id="start-date">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">📅 结束日期</label>
+                            <input type="date" id="end-date" class="form-input">
+                        </div>
+                    </div>
+                    <button class="generate-btn" id="generate-guide-btn">✨ 生成专属攻略</button>
+                </div>
+
+                <div class="loading-spinner" id="loading-spinner">
+                    <div class="spinner-icon"></div>
+                    <div class="loading-text">🤖 AI正在为您规划旅游攻略，请稍候...</div>
+                </div>
+
+                <div class="ai-result markdown-content" id="ai-result"></div>
             </div>
         </div>
     </div>
 
     <script>
+        // 全局变量
+        let currentAttractionId = null;
+        let currentAttractionName = null;
         let attractionId = null;
 
+        // 页面加载完成后执行
         $(document).ready(function() {
             // 检查登录状态
             const user = JSON.parse(localStorage.getItem('user'));
@@ -439,6 +553,7 @@
             // 获取URL参数中的景点ID
             const urlParams = new URLSearchParams(window.location.search);
             attractionId = urlParams.get('id');
+            currentAttractionId = attractionId;
 
             if (!attractionId) {
                 alert('景点ID不存在');
@@ -454,6 +569,93 @@
                 const tabName = $(this).data('tab');
                 switchTab(tabName);
             });
+
+            // 返回首页
+            $('.navbar-brand').click(function() {
+                window.location.href = 'index.html';
+            });
+
+            // AI攻略生成功能
+            $('#generate-guide-btn').click(function() {
+                const peopleCount = $('#people-count').val();
+                const startDate = $('#start-date').val();
+                const endDate = $('#end-date').val();
+
+                console.log('准备生成AI攻略');
+                console.log('currentAttractionId:', currentAttractionId);
+                console.log('attractionId:', attractionId);
+                console.log('人数:', peopleCount);
+                console.log('日期:', startDate, '到', endDate);
+
+                if (!currentAttractionId && !attractionId) {
+                    alert('景点ID获取失败，请刷新页面重试');
+                    return;
+                }
+
+                if (!peopleCount || peopleCount <= 0) {
+                    alert('请输入出游人数');
+                    return;
+                }
+
+                if (!startDate || !endDate) {
+                    alert('请选择出游日期');
+                    return;
+                }
+
+                if (new Date(startDate) > new Date(endDate)) {
+                    alert('开始日期不能晚于结束日期');
+                    return;
+                }
+
+                const requestAttractionId = currentAttractionId || attractionId;
+                console.log('使用的景点ID:', requestAttractionId);
+
+                $('#generate-guide-btn').prop('disabled', true);
+                $('#loading-spinner').addClass('show');
+                $('#ai-result').removeClass('show').html('');
+
+                const requestData = {
+                    attractionId: requestAttractionId,
+                    people: peopleCount,
+                    startDate: startDate,
+                    endDate: endDate
+                };
+                console.log('请求参数:', requestData);
+
+                $.ajax({
+                    url: '/api/ai/generate-guide',
+                    method: 'GET',
+                    data: requestData,
+                    success: function(response) {
+                        console.log('AI生成成功:', response);
+                        if (response.code === 200) {
+                            const markdownContent = response.data;
+                            const htmlContent = marked.parse(markdownContent);
+                            $('#ai-result').html(htmlContent).addClass('show');
+                        } else {
+                            alert('生成失败：' + response.msg);
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('AI攻略生成失败:', xhr);
+                        const errorMsg = xhr.responseJSON ? xhr.responseJSON.msg : '网络错误，请稍后再试';
+                        alert('生成失败：' + errorMsg);
+                    },
+                    complete: function() {
+                        $('#generate-guide-btn').prop('disabled', false);
+                        $('#loading-spinner').removeClass('show');
+                    }
+                });
+            });
+
+            // 设置默认日期为明天和后天
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dayAfter = new Date();
+            dayAfter.setDate(dayAfter.getDate() + 3);
+
+            $('#start-date').val(tomorrow.toISOString().split('T')[0]);
+            $('#end-date').val(dayAfter.toISOString().split('T')[0]);
         });
 
         // 加载景点详情
@@ -484,6 +686,9 @@
             const attraction = data.attraction;
             const comments = data.comments || [];
 
+            // 保存景点信息到全局变量
+            currentAttractionName = attraction.name;
+
             // 设置头部信息
             $('#attraction-image').attr('src', attraction.imageUrl || 'https://via.placeholder.com/400x300?text=暂无图片');
             $('#attraction-title').text(attraction.name);
@@ -512,7 +717,7 @@
 
         // 显示评论列表
         function displayComments(comments) {
-            const commentList = $('#comment-list');
+            const commentList = $('#comments-list');
             commentList.empty();
 
             if (comments && comments.length > 0) {
@@ -520,8 +725,8 @@
                     const commentCard = `
                         <div class="comment-card">
                             <div class="comment-header">
-                                <div class="comment-user">${comment.userName || '匿名用户'}</div>
-                                <div class="comment-rating">⭐ ${comment.rating || 'N/A'}</div>
+                                <div class="comment-user">👤 用户 ${comment.userId}</div>
+                                <div class="comment-time">${formatDate(comment.createTime)}</div>
                             </div>
                             <div class="comment-content">${comment.content || ''}</div>
                         </div>
@@ -529,8 +734,15 @@
                     commentList.append(commentCard);
                 });
             } else {
-                commentList.html('<div class="no-comments">暂无评论</div>');
+                commentList.html('<div style="text-align:center;padding:40px;color:#999;">暂无评论</div>');
             }
+        }
+
+        // 格式化日期
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('zh-CN');
         }
 
         // Tab切换
