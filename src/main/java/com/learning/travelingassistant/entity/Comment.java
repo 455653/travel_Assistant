@@ -14,5 +14,6 @@ public class Comment {
     private Long attractionId;
     private Long userId;
     private String content;
+    private String imageUrl;
     private LocalDateTime createTime;
 }

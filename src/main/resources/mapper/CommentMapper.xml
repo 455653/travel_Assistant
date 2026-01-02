@@ -7,14 +7,20 @@
         <result property="attractionId" column="attraction_id"/>
         <result property="userId" column="user_id"/>
         <result property="content" column="content"/>
+        <result property="imageUrl" column="image_url"/>
         <result property="createTime" column="create_time"/>
     </resultMap>
 
     <select id="findByAttractionId" resultMap="commentResultMap">
-        SELECT id, attraction_id, user_id, content, create_time
+        SELECT id, attraction_id, user_id, content, image_url, create_time
         FROM comment
         WHERE attraction_id = #{attractionId}
         ORDER BY create_time DESC
     </select>
+
+    <insert id="insert" parameterType="com.learning.travelingassistant.entity.Comment">
+        INSERT INTO comment (attraction_id, user_id, content, image_url, create_time)
+        VALUES (#{attractionId}, #{userId}, #{content}, #{imageUrl}, NOW())
+    </insert>
 
 </mapper>

@@ -1,0 +1,46 @@
+# Role
+你是一名资深 Java Spring Boot 全栈开发工程师。
+我的项目是一个基于 Spring Boot 3 + jQuery 的“中国旅游助手”系统。
+目前 `detail.html` 页面已经实现了通过 DeepSeek API 生成 Markdown 格式的旅游攻略（显示在 `#guide-content` 容器中）。
+
+# Goal
+请在现有项目中**新增**一个功能：**将当前页面展示的 AI 旅游攻略导出为 Word (.docx) 文件**。
+用户点击“导出攻略”按钮后，将页面上已经生成的 Markdown 攻略内容发送给后端，后端将其转换为 Word 文档并触发浏览器下载。
+
+# Constraints
+1.  **严禁修改**现有的 `DeepSeekService` 和 `AiController` 中关于生成的逻辑，只做**新增**。
+2.  使用 **Apache POI** (生成 Word) 和 **commonmark-java** (解析 Markdown) 库。
+3.  确保导出的 Word 文档排版整洁（包含标题、正文、列表等基本格式）。
+
+# Implementation Plan (请按以下步骤生成代码)
+
+## 1. 依赖配置 (pom.xml)
+请提供需要新增的 Maven 依赖代码（Apache POI 和 commonmark）。
+
+## 2. 后端服务层 (ExportService.java)
+新建 `com.learning.travelingassistant.service.ExportService` 类：
+* 方法：`public byte[] exportGuideToWord(String title, String markdownContent)`
+* 逻辑：
+    1.  创建一个新的 Word 文档 (`XWPFDocument`)。
+    2.  添加一个居中的大标题（如“北京故宫 - 旅游攻略”）。
+    3.  使用 `commonmark` 库解析传入的 markdownContent。
+    4.  遍历解析后的节点，将 Markdown 的标题（H1-H3）、列表（List）、普通文本（Text）分别转换为 Word 中的对应格式（段落加粗、缩进等）。
+    5.  将文档写入 `ByteArrayOutputStream` 并返回字节数组。
+
+## 3. 后端接口层 (ExportController.java)
+新建 `com.learning.travelingassistant.controller.ExportController` 类：
+* 接口：`POST /api/export/word`
+* 参数：接收 JSON 对象 `{ "title": "...", "content": "..." }`。
+* 响应：返回 `ResponseEntity<byte[]>`，设置 Header 为 `Content-Disposition: attachment; filename="guide.docx"`，Content-Type 为 `application/vnd.openxmlformats-officedocument.wordprocessingml.document`。
+
+## 4. 前端界面 (detail.html)
+请提供前端修改的代码片段（可以直接粘贴到现有代码的合适位置）：
+* **HTML**：在现有的“生成攻略”按钮旁边，新增一个“导出 Word”按钮（默认隐藏，只有当攻略生成完毕后才显示）。
+* **JavaScript (jQuery)**：
+    1.  为“导出 Word”按钮绑定点击事件。
+    2.  获取当前页面 `#guide-content` 中的 Markdown 原文（注意：不是获取渲染后的 HTML，而是建议在生成攻略时将 Markdown 文本暂存到一个隐藏域或 JS 变量中，或者直接从界面获取）。
+    3.  使用 `fetch` 或 `$.ajax` (设置 `responseType: 'blob'`) 发送 POST 请求。
+    4.  接收到 Blob 响应后，在前端创建一个临时的 `<a>` 标签触发下载。
+
+# Output
+请直接给出完整、可运行的代码，不需要过多的理论解释。

@@ -267,6 +267,35 @@
             cursor: not-allowed;
         }
 
+        .export-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .export-btn.show {
+            display: block;
+        }
+
+        .export-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(17, 153, 142, 0.3);
+        }
+
+        .export-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .ai-result {
             background: white;
             padding: 25px;
@@ -360,6 +389,137 @@
             padding: 2px 6px;
             border-radius: 4px;
             font-family: 'Courier New', monospace;
+        }
+
+        /* 评论样式 */
+        .comment-form {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .comment-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+
+        .comment-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .image-upload-section {
+            margin-bottom: 15px;
+        }
+
+        .upload-label {
+            display: inline-block;
+            padding: 8px 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-label:hover {
+            background: #5568d3;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .image-preview {
+            margin-top: 15px;
+            display: none;
+            position: relative;
+        }
+
+        .image-preview.show {
+            display: block;
+        }
+
+        .preview-image {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .remove-image {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .submit-comment-btn {
+            padding: 10px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-comment-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-comment-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .comment-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .comment-content {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .comment-image {
+            max-width: 300px;
+            border-radius: 8px;
+            margin-top: 10px;
+            cursor: pointer;
         }
 
         /* 天气卡片 */
@@ -499,6 +659,25 @@
 
             <!-- 游客评论 -->
             <div class="tab-content" id="tab-comments">
+                <div class="comment-form">
+                    <textarea class="comment-textarea" id="comment-content" placeholder="分享你的旅游体验..."></textarea>
+
+                    <div class="image-upload-section">
+                        <label class="upload-label" for="comment-image">
+                            📷 上传图片
+                        </label>
+                        <input type="file" id="comment-image" class="file-input" accept="image/*">
+                        <input type="hidden" id="hidden-image-url">
+                    </div>
+
+                    <div class="image-preview" id="image-preview">
+                        <img id="preview-img" class="preview-image" src="" alt="预览">
+                        <button class="remove-image" id="remove-image">×</button>
+                    </div>
+
+                    <button class="submit-comment-btn" id="submit-comment-btn">发表评论</button>
+                </div>
+
                 <div id="comments-list"></div>
             </div>
 
@@ -522,6 +701,7 @@
                         </div>
                     </div>
                     <button class="generate-btn" id="generate-guide-btn">✨ 生成专属攻略</button>
+                    <button class="export-btn" id="export-word-btn">📄 导出为 Word</button>
                 </div>
 
                 <div class="loading-spinner" id="loading-spinner">
@@ -539,6 +719,7 @@
         let currentAttractionId = null;
         let currentAttractionName = null;
         let attractionId = null;
+        let generatedMarkdown = null;
 
         // 页面加载完成后执行
         $(document).ready(function() {
@@ -630,8 +811,10 @@
                         console.log('AI生成成功:', response);
                         if (response.code === 200) {
                             const markdownContent = response.data;
+                            generatedMarkdown = markdownContent;
                             const htmlContent = marked.parse(markdownContent);
                             $('#ai-result').html(htmlContent).addClass('show');
+                            $('#export-word-btn').addClass('show');
                         } else {
                             alert('生成失败：' + response.msg);
                         }
@@ -645,6 +828,54 @@
                         $('#generate-guide-btn').prop('disabled', false);
                         $('#loading-spinner').removeClass('show');
                     }
+                });
+            });
+
+            // 导出 Word 功能
+            $('#export-word-btn').click(function() {
+                if (!generatedMarkdown) {
+                    alert('请先生成攻略');
+                    return;
+                }
+
+                const title = currentAttractionName + ' - 旅游攻略';
+
+                $('#export-word-btn').prop('disabled', true).text('📄 导出中...');
+
+                fetch('/api/export/word', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        content: generatedMarkdown
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('导出失败');
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = title + '.docx';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    alert('导出成功！');
+                })
+                .catch(error => {
+                    console.error('导出失败:', error);
+                    alert('导出失败，请重试');
+                })
+                .finally(() => {
+                    $('#export-word-btn').prop('disabled', false).text('📄 导出为 Word');
                 });
             });
 
@@ -722,6 +953,10 @@
 
             if (comments && comments.length > 0) {
                 comments.forEach(comment => {
+                    const imageHtml = comment.imageUrl
+                        ? `<img src="${comment.imageUrl}" class="comment-image" alt="评论图片">`
+                        : '';
+
                     const commentCard = `
                         <div class="comment-card">
                             <div class="comment-header">
@@ -729,6 +964,7 @@
                                 <div class="comment-time">${formatDate(comment.createTime)}</div>
                             </div>
                             <div class="comment-content">${comment.content || ''}</div>
+                            ${imageHtml}
                         </div>
                     `;
                     commentList.append(commentCard);
@@ -737,6 +973,91 @@
                 commentList.html('<div style="text-align:center;padding:40px;color:#999;">暂无评论</div>');
             }
         }
+
+        // 图片上传预览
+        $('#comment-image').change(function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert('图片大小不能超过 5MB');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            $.ajax({
+                url: '/api/upload/image',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.code === 200) {
+                        $('#hidden-image-url').val(response.data);
+                        $('#preview-img').attr('src', response.data);
+                        $('#image-preview').addClass('show');
+                    } else {
+                        alert('上传失败：' + response.msg);
+                    }
+                },
+                error: function() {
+                    alert('图片上传失败，请重试');
+                }
+            });
+        });
+
+        // 移除图片
+        $('#remove-image').click(function() {
+            $('#comment-image').val('');
+            $('#hidden-image-url').val('');
+            $('#image-preview').removeClass('show');
+        });
+
+        // 提交评论
+        $('#submit-comment-btn').click(function() {
+            const content = $('#comment-content').val().trim();
+            const imageUrl = $('#hidden-image-url').val();
+            const user = JSON.parse(localStorage.getItem('user'));
+
+            if (!content) {
+                alert('请输入评论内容');
+                return;
+            }
+
+            $(this).prop('disabled', true);
+
+            $.ajax({
+                url: '/api/comments',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    attractionId: attractionId,
+                    userId: user.id,
+                    content: content,
+                    imageUrl: imageUrl || null
+                }),
+                success: function(response) {
+                    if (response.code === 200) {
+                        alert('评论发表成功！');
+                        $('#comment-content').val('');
+                        $('#comment-image').val('');
+                        $('#hidden-image-url').val('');
+                        $('#image-preview').removeClass('show');
+                        loadAttractionDetail();
+                    } else {
+                        alert('评论失败：' + response.msg);
+                    }
+                },
+                error: function() {
+                    alert('评论发表失败，请重试');
+                },
+                complete: function() {
+                    $('#submit-comment-btn').prop('disabled', false);
+                }
+            });
+        });
 
         // 格式化日期
         function formatDate(dateStr) {

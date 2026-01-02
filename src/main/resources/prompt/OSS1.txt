@@ -1,0 +1,52 @@
+# Role
+你是一名资深的 Java Spring Boot 全栈开发工程师。
+我正在开发一个“旅游助手”项目，现在的任务是完成**“评论图片上传”**功能。
+
+# Context
+1.  **当前架构**：Spring Boot 3 + MyBatis + MySQL + jQuery (前端)。
+2.  **现有资源**：
+    * 已经提供了 `OSS.txt` (阿里云 OSS 集成规范)。
+    * 已经提供了数据库 Schema，包含 `comment` 表，在data.sql文件中
+    * OSS相关配置：Bucket Name ：travel-assistant-2025
+    AccessKey ID
+    AccessKey Secret
+    Endpoint（地域节点） oss-cn-hangzhou.aliyuncs.com
+3.  **核心需求**：
+    * 用户在 `detail.html` 评论时，可以选择上传一张图片。
+    * 流程：用户选图 -> 前端 Ajax 传给后端 -> 后端上传到阿里云 OSS -> OSS 返回 URL -> 前端拿到 URL 存入隐藏域 -> 用户提交评论 -> 数据库 `comment` 表存入该 URL。
+
+# Task 1: Database Update
+请为我生成 SQL 语句：
+* 修改 `comment` 表，新增一个字段 `image_url` (varchar 500)，允许为空（因为有的评论没图）。
+
+# Task 2: Backend Implementation
+请基于 `OSS.txt` 的规范和我的现有代码，生成以下 Java 代码：
+1.  **Dependencies**: 在 `pom.xml` 中添加 `aliyun-sdk-oss` (v3.17.4) 和 JAXB 依赖（Java 17 必备）。
+2.  **Configuration**:
+    * 在 `application.yml` 中预留 OSS 配置项（endpoint, key, secret, bucketName）。
+    * 创建一个 `OssConfig` 配置类或直接使用 `@Value` 读取配置。
+3.  **Utility/Service**:
+    * 创建 `AliOssUtil.java` (或 Service)。
+    * 实现 `upload(MultipartFile file)` 方法。
+    * **关键逻辑**：文件名使用 `UUID` 防止冲突；根据 `OSS.txt` 指引，上传后**手动拼接**并返回公网访问 URL (格式：`https://{bucketName}.{endpoint}/{objectKey}`)。
+4.  **Controller**:
+    * 新增 `UploadController`：提供 `POST /api/upload/image` 接口，接收文件，返回 URL。
+    * 修改 `CommentController`：确保 `addComment` 接口能接收前端传来的 `imageUrl` 参数，并保存到数据库。
+5.  **Mapper**: 修改 `CommentMapper.xml` 和 `Comment.java` 实体类，增加 `imageUrl` 字段的映射。
+
+# Task 3: Frontend Implementation
+请修改 `detail.html` (基于 jQuery)：
+1.  在评论输入框 (`textarea`) 下方，增加一个文件选择框 `<input type="file" accept="image/*">`。
+2.  增加一个“图片预览”区域（默认隐藏，有值时显示）。
+3.  **JS 逻辑**：
+    * 监听文件选择：一旦用户选了图，立即通过 Ajax 发送到 `/api/upload/image`。
+    * 上传成功后：将返回的 URL 填入一个 `<input type="hidden" id="hidden-image-url">`，并显示图片预览。
+    * 提交评论时：从隐藏域获取 URL，随评论内容一起发送给后端。
+
+# Constraints
+* **严禁**修改 `OSS.txt` 中指定的依赖版本。
+* 保持代码整洁，所有 OSS 配置项都要从 `application.yml` 读取。
+* 上传图片前请校验文件是否为空。
+* 生成的 URL 必须是 HTTPS。
+
+请直接给出代码实现，不用解释太多理论。
