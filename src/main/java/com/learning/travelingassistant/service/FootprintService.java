@@ -21,4 +21,10 @@ public interface FootprintService {
     void addPhoto(Long userId, Long footprintId, String imageUrl);
     
     void deletePhoto(Long userId, Long photoId);
+    
+    void deleteFootprint(Long userId, Long footprintId);
+    
+    void updateTitle(Long userId, Long footprintId, String title);
+    
+    void addNote(Long userId, Long footprintId, String content);
 }

@@ -17,6 +17,11 @@
         VALUES (#{footprintId}, #{uploaderId}, #{imageUrl}, NOW())
     </insert>
 
+    <insert id="insertNote" parameterType="com.learning.travelingassistant.entity.FootprintNote" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO footprint_note (footprint_id, author_id, content, create_time)
+        VALUES (#{footprintId}, #{authorId}, #{content}, NOW())
+    </insert>
+
     <select id="findById" resultType="com.learning.travelingassistant.entity.TravelFootprint">
         SELECT f.id, f.creator_id, f.province_id, f.title, f.start_date, f.end_date, f.create_time,
                u.username as creatorUsername, p.name as provinceName
@@ -65,6 +70,15 @@
         ORDER BY p.create_time DESC
     </select>
 
+    <select id="findNotesByFootprint" resultType="com.learning.travelingassistant.entity.FootprintNote">
+        SELECT n.id, n.footprint_id, n.author_id, n.content, n.create_time,
+               u.username as authorUsername
+        FROM footprint_note n
+        LEFT JOIN users u ON n.author_id = u.id
+        WHERE n.footprint_id = #{footprintId}
+        ORDER BY n.create_time DESC
+    </select>
+
     <select id="findPhotoById" resultType="com.learning.travelingassistant.entity.FootprintPhoto">
         SELECT p.id, p.footprint_id, p.uploader_id, p.image_url, p.create_time,
                u.username as uploaderUsername
@@ -76,6 +90,14 @@
     <delete id="deletePhoto">
         DELETE FROM footprint_photo WHERE id = #{id}
     </delete>
+
+    <delete id="deleteFootprint">
+        DELETE FROM travel_footprint WHERE id = #{id}
+    </delete>
+
+    <update id="updateTitle">
+        UPDATE travel_footprint SET title = #{title} WHERE id = #{id}
+    </update>
 
     <select id="findCollaboratorsByFootprint" resultType="com.learning.travelingassistant.entity.FootprintCollaborator">
         SELECT c.id, c.footprint_id, c.user_id, c.create_time,

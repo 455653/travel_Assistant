@@ -243,6 +243,83 @@
             font-weight: 600;
             cursor: pointer;
             margin-bottom: 20px;
+            margin-right: 10px;
+        }
+
+        .note-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 15px;
+        }
+
+        .note-content {
+            color: #2c3e50;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            margin-bottom: 8px;
+        }
+
+        .note-info {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .timeline-container {
+            margin-top: 20px;
+        }
+
+        .timeline-item {
+            margin-bottom: 20px;
+        }
+
+        .action-buttons {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-danger-custom {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-warning-custom {
+            background: #f39c12;
+            color: white;
+        }
+
+        .note-input-area {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .note-textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 14px;
+        }
+
+        .note-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .upload-note-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
         }
 
         .loading-overlay {
@@ -343,19 +420,40 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <div>
+                    <div style="flex: 1;">
                         <h5 class="modal-title" id="detailTitle"></h5>
                         <small class="text-muted" id="detailInfo"></small>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- 操作按钮区（仅创建者可见） -->
+                    <div class="action-buttons" id="actionButtons" style="display: none;">
+                        <button class="btn btn-sm btn-warning-custom" onclick="showEditTitleInput()">✏️ 修改标题</button>
+                        <button class="btn btn-sm btn-danger-custom" onclick="deleteFootprint()">🗑️ 删除相册</button>
+                    </div>
+
+                    <!-- 标题编辑区 -->
+                    <div id="editTitleArea" style="display: none; margin-bottom: 20px;">
+                        <input type="text" class="form-control" id="newTitleInput" placeholder="输入新标题">
+                        <button class="btn btn-sm btn-primary mt-2" onclick="updateTitle()">保存</button>
+                        <button class="btn btn-sm btn-secondary mt-2" onclick="cancelEditTitle()">取消</button>
+                    </div>
+
+                    <!-- 上传照片 -->
                     <input type="file" id="photoInput" accept="image/*" style="display: none;" onchange="uploadPhoto()">
                     <button class="upload-btn" onclick="$('#photoInput').click()">📷 上传照片</button>
 
-                    <div id="photoGrid" class="photo-grid"></div>
-                    <div id="emptyPhotos" style="text-align: center; padding: 40px; color: #999; display: none;">
-                        暂无照片，快来上传第一张吧！
+                    <!-- 时间流容器 -->
+                    <div id="timelineContainer" class="timeline-container"></div>
+                    <div id="emptyTimeline" style="text-align: center; padding: 40px; color: #999; display: none;">
+                        暂无内容，快来上传照片或发布文字吧！
+                    </div>
+
+                    <!-- 发布文字区域 -->
+                    <div class="note-input-area">
+                        <textarea class="note-textarea" id="noteTextarea" placeholder="分享你的旅行故事..."></textarea>
+                        <button class="upload-note-btn" onclick="publishNote()">📝 发布文字</button>
                     </div>
                 </div>
             </div>
@@ -369,6 +467,7 @@
         let allProvinces = [];
         let provinceCoords = {};
         let currentFootprintId = null;
+        let isCreator = false;
 
         $(document).ready(function() {
             const userStr = localStorage.getItem('user');
@@ -754,7 +853,8 @@
                     if (response.code === 200) {
                         const data = response.data;
                         const footprint = data.footprint;
-                        const photos = data.photos;
+                        const items = data.items || [];
+                        isCreator = data.isCreator;
 
                         $('#detailTitle').text(footprint.title);
                         const dateStr = footprint.startDate && footprint.endDate
@@ -762,34 +862,133 @@
                             : '未设置日期';
                         $('#detailInfo').text(`${footprint.provinceName} | ${dateStr} | 创建者: ${footprint.creatorUsername}`);
 
-                        if (photos.length === 0) {
-                            $('#photoGrid').hide();
-                            $('#emptyPhotos').show();
+                        if (isCreator) {
+                            $('#actionButtons').show();
                         } else {
-                            $('#emptyPhotos').hide();
-                            $('#photoGrid').show();
-
-                            let html = '';
-                            photos.forEach(p => {
-                                const canDelete = p.uploaderId === currentUser.id || footprint.creatorId === currentUser.id;
-                                html += `
-                                    <div class="photo-item">
-                                        <img src="${p.imageUrl}" alt="照片">
-                                        <div class="photo-info">
-                                            上传者: ${p.uploaderUsername}<br>
-                                            ${new Date(p.createTime).toLocaleString()}
-                                        </div>
-                                        ${canDelete ? `<button class="photo-delete" onclick="deletePhoto(${p.id})">×</button>` : ''}
-                                    </div>
-                                `;
-                            });
-                            $('#photoGrid').html(html);
+                            $('#actionButtons').hide();
                         }
 
+                        if (items.length === 0) {
+                            $('#timelineContainer').hide();
+                            $('#emptyTimeline').show();
+                        } else {
+                            $('#emptyTimeline').hide();
+                            $('#timelineContainer').show();
+
+                            let html = '';
+                            items.forEach(item => {
+                                if (item.type === 'PHOTO') {
+                                    const canDelete = isCreator;
+                                    html += `
+                                        <div class="timeline-item">
+                                            <div class="photo-item">
+                                                <img src="${item.content}" alt="照片" style="width: 100%; border-radius: 8px;">
+                                                <div class="photo-info">
+                                                    上传者: ${item.authorName}<br>
+                                                    ${new Date(item.createTime).toLocaleString()}
+                                                </div>
+                                                ${canDelete ? `<button class="photo-delete" onclick="deletePhoto(${item.itemId})">×</button>` : ''}
+                                            </div>
+                                        </div>
+                                    `;
+                                } else if (item.type === 'NOTE') {
+                                    html += `
+                                        <div class="timeline-item">
+                                            <div class="note-item">
+                                                <div class="note-content">${escapeHtml(item.content)}</div>
+                                                <div class="note-info">
+                                                    ✍️ ${item.authorName} · ${new Date(item.createTime).toLocaleString()}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+                            });
+                            $('#timelineContainer').html(html);
+                        }
+
+                        $('#editTitleArea').hide();
+                        $('#noteTextarea').val('');
                         new bootstrap.Modal($('#footprintDetailModal')).show();
                     } else {
                         alert(response.msg);
                     }
+                }
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showEditTitleInput() {
+            const currentTitle = $('#detailTitle').text();
+            $('#newTitleInput').val(currentTitle);
+            $('#editTitleArea').show();
+        }
+
+        function cancelEditTitle() {
+            $('#editTitleArea').hide();
+            $('#newTitleInput').val('');
+        }
+
+        function updateTitle() {
+            const newTitle = $('#newTitleInput').val().trim();
+            if (!newTitle) {
+                alert('标题不能为空');
+                return;
+            }
+
+            $.ajax({
+                url: '/api/footprint/update/title',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    userId: currentUser.id,
+                    footprintId: currentFootprintId,
+                    title: newTitle
+                }),
+                success: function(response) {
+                    if (response.code === 200) {
+                        alert('标题修改成功！');
+                        $('#detailTitle').text(newTitle);
+                        $('#editTitleArea').hide();
+                        location.reload();
+                    } else {
+                        alert(response.msg);
+                    }
+                },
+                error: function() {
+                    alert('修改失败，请重试');
+                }
+            });
+        }
+
+        function deleteFootprint() {
+            if (!confirm('确定要删除整个相册吗？此操作将删除所有照片和文字记录，且无法恢复！')) {
+                return;
+            }
+
+            $.ajax({
+                url: '/api/footprint/delete',
+                method: 'POST',
+                data: {
+                    id: currentFootprintId,
+                    userId: currentUser.id
+                },
+                success: function(response) {
+                    if (response.code === 200) {
+                        alert('相册删除成功！');
+                        bootstrap.Modal.getInstance($('#footprintDetailModal')).hide();
+                        location.reload();
+                    } else {
+                        alert(response.msg);
+                    }
+                },
+                error: function() {
+                    alert('删除失败，请重试');
                 }
             });
         }
@@ -855,6 +1054,37 @@
                     } else {
                         alert(response.msg);
                     }
+                }
+            });
+        }
+
+        function publishNote() {
+            const content = $('#noteTextarea').val().trim();
+            if (!content) {
+                alert('请输入文字内容');
+                return;
+            }
+
+            $.ajax({
+                url: '/api/footprint/note/add',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    userId: currentUser.id,
+                    footprintId: currentFootprintId,
+                    content: content
+                }),
+                success: function(response) {
+                    if (response.code === 200) {
+                        alert('发布成功！');
+                        $('#noteTextarea').val('');
+                        viewFootprintDetail(currentFootprintId);
+                    } else {
+                        alert(response.msg);
+                    }
+                },
+                error: function() {
+                    alert('发布失败，请重试');
                 }
             });
         }

@@ -1,0 +1,72 @@
+# Role
+你是一名资深 Java Spring Boot 全栈开发工程师。
+我正在开发“中国旅游助手”项目的“旅行足迹 (Travel Footprint)”模块。
+目前项目已经实现了基于 ECharts 地图的足迹创建、查看和照片上传功能。
+
+# Context (现有资源)
+1.  **数据库**：
+    * `travel_footprint`: 足迹相册主表 (字段: `id`, `creator_id`, `title` 等)。
+    * `footprint_photo`: 足迹照片表 (字段: `id`, `footprint_id`, `image_url` 等)。
+    * `footprint_collaborator`: 协作者权限表。
+2.  **后端架构**：`FootprintController`, `FootprintService`, `FootprintMapper`。
+3.  **前端架构**：`footprint.html` (使用 jQuery + ECharts)。
+
+# Goal
+请在现有基础上进行**增量开发**，实现以下三个新功能：
+1.  **删除足迹**：相册的**创建者 (Creator)** 可以删除整个足迹相册（级联删除相关的照片、文字和协作关系）。
+2.  **重命名足迹**：相册的**创建者 (Creator)** 可以修改相册的标题 (`title`)。
+3.  **添加文字记录**：用户（创建者或协作者）除了上传照片，还可以在足迹中发布纯文字的记录（类似于日记或备注）。
+
+# Implementation Plan (请严格按此步骤生成代码)
+
+## Task 1: Database Update (SQL)
+请生成 MySQL 脚本：
+1.  **新建 `footprint_note` 表**：用于存储纯文字记录。
+    * 字段：`id`, `footprint_id` (关联足迹), `author_id` (发布者), `content` (文本内容, TEXT类型), `create_time`。
+    * 设置外键约束，确保足迹删除时级联删除文字记录。
+
+## Task 2: Backend Implementation (Java)
+
+### 2.1 Entity & Mapper
+* 创建 `FootprintNote` 实体类。
+* 创建 `FootprintNoteMapper` (XML)，包含插入和根据 `footprint_id` 查询的方法。
+* 修改 `FootprintMapper`，新增 `updateTitle` 和 `deleteById` 方法。
+
+### 2.2 Service Layer (`FootprintServiceImpl`)
+请新增以下业务逻辑：
+1.  **删除足迹 (`deleteFootprint`)**：
+    * **权限校验**：必须检查当前用户是否为该足迹的 `creator_id`。只有创建者能删。
+    * 执行删除操作（数据库设置了级联，主表删除即可）。
+2.  **重命名 (`updateTitle`)**：
+    * **权限校验**：仅限创建者。
+    * 执行更新操作。
+3.  **发布文字 (`addNote`)**：
+    * **权限校验**：检查当前用户是否在 `footprint_collaborator` 表中（或是创建者）。
+    * 插入数据到 `footprint_note`。
+4.  **查询详情优化 (`getFootprintDetail`)**：
+    * 目前该方法只返回照片。请修改 DTO 结构，使其能同时返回 **照片 (`footprint_photo`)** 和 **文字 (`footprint_note`)**。
+    * 建议定义一个统一的 `FootprintItemDTO`，包含 `type` (PHOTO/NOTE), `content` (url或文字), `authorName`, `createTime`，并将它们按时间倒序混合排列返回。
+
+### 2.3 Controller (`FootprintController`)
+新增以下接口：
+* `POST /api/footprint/delete?id=xx`
+* `POST /api/footprint/update/title` (参数: id, title)
+* `POST /api/footprint/note/add` (参数: footprintId, content)
+
+## Task 3: Frontend Implementation (`footprint.html` JS部分)
+请提供修改后的 JavaScript 逻辑（特别是模态框内的逻辑）：
+1.  **详情展示优化**：
+    * 在渲染相册详情时，不再只是简单的照片网格。
+    * 改为**时间流 (Timeline) 或 混合卡片流**布局：同时遍历照片和文字数据，根据类型渲染 `<img>` 或 `<p>` 标签。
+2.  **操作区增强**：
+    * 在详情弹窗顶部增加“修改标题”按钮（点击变输入框）和“删除相册”按钮（仅创建者可见，需二次确认）。
+    * 在底部增加一个“发布文字”的输入框和发送按钮，位于上传照片按钮旁边。
+    * **注意**：根据后端返回的 `isCreator` 字段来控制“删除/重命名”按钮的显示与隐藏。
+
+# Constraints
+* **严禁修改**其他的 OSS 上传、登录注册等无关代码。
+* 保持 Result 统一返回格式。
+* **SQL 脚本请单独列出**。
+* 代码中请做好权限校验的注释。
+
+请为我生成完整、详细的代码实现。

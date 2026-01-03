@@ -114,4 +114,48 @@ public class FootprintController {
             return Result.error("删除照片失败: " + e.getMessage());
         }
     }
+
+    @PostMapping("/delete")
+    public Result<String> deleteFootprint(@RequestParam Long id, @RequestParam Long userId) {
+        try {
+            footprintService.deleteFootprint(userId, id);
+            return Result.success("相册删除成功");
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("删除相册失败: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/update/title")
+    public Result<String> updateTitle(@RequestBody Map<String, Object> params) {
+        try {
+            Long userId = Long.parseLong(params.get("userId").toString());
+            Long footprintId = Long.parseLong(params.get("footprintId").toString());
+            String title = params.get("title").toString();
+
+            footprintService.updateTitle(userId, footprintId, title);
+            return Result.success("标题修改成功");
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("修改标题失败: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/note/add")
+    public Result<String> addNote(@RequestBody Map<String, Object> params) {
+        try {
+            Long userId = Long.parseLong(params.get("userId").toString());
+            Long footprintId = Long.parseLong(params.get("footprintId").toString());
+            String content = params.get("content").toString();
+
+            footprintService.addNote(userId, footprintId, content);
+            return Result.success("文字发布成功");
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("发布文字失败: " + e.getMessage());
+        }
+    }
 }
