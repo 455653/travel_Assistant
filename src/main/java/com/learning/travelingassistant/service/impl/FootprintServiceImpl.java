@@ -60,6 +60,11 @@ public class FootprintServiceImpl implements FootprintService {
     }
 
     @Override
+    public List<TravelFootprint> listAllFootprints(Long userId) {
+        return footprintMapper.findAllByUser(userId);
+    }
+
+    @Override
     public Map<String, Object> getFootprintDetail(Long footprintId, Long userId) {
         FootprintCollaborator collaborator = footprintMapper.findCollaborator(footprintId, userId);
         if (collaborator == null) {

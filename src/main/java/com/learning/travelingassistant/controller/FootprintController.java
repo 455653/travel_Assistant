@@ -29,6 +29,16 @@ public class FootprintController {
         }
     }
 
+    @GetMapping("/all")
+    public Result<List<TravelFootprint>> listAllFootprints(@RequestParam Long userId) {
+        try {
+            List<TravelFootprint> footprints = footprintService.listAllFootprints(userId);
+            return Result.success(footprints);
+        } catch (Exception e) {
+            return Result.error("获取所有足迹失败: " + e.getMessage());
+        }
+    }
+
     @PostMapping("/create")
     public Result<String> createFootprint(@RequestBody Map<String, Object> params) {
         try {

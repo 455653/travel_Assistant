@@ -1,0 +1,68 @@
+# Role
+你是一名资深前端可视化工程师和 Java Spring Boot 后端开发者。
+我现有的项目是“中国旅游助手”，包含“旅行足迹”功能（基于 ECharts 地图）。
+目前的功能存在三个问题，需要你帮我进行**代码重构和优化**。
+
+# Context (现有资源)
+1.  **后端**：`FootprintController`, `FootprintService`, `FootprintMapper`，数据库表 `travel_footprint` (足迹), `footprint_photo` (照片)。
+2.  **前端**：`footprint.html` (目前是一个居中的小窗口，包含 ECharts 地图)。
+3.  **数据结构**：一个省份目前被代码限制为只能创建一个足迹，数据库表结构本身支持一对多（`creator_id` + `province_id` 不唯一）。
+
+# Goals (修改目标)
+
+请分步骤为我生成修改后的代码：
+
+## Goal 1: 解除“单省份单足迹”限制 (Backend)
+**需求**：目前逻辑限制了一个省份只能上传一个照片集，请修改为**允许一个省份创建多个不同的足迹相册**。
+* **Service 层** (`FootprintServiceImpl`)：检查并移除 `createFootprint` 方法中关于“该省份已存在足迹”的拦截逻辑。
+* **Mapper 层** (`FootprintMapper.xml`)：确保 `selectByProvinceAndUser` 返回的是 `List<FootprintDTO>`，而不是单个对象。
+* **DTO 层**：确保返回给前端的列表数据中，每个足迹对象包含：`id`, `title`, `coverImage` (该相册的第一张照片 URL，如果没有则给默认图)。
+
+## Goal 2: 页面全屏化 (CSS/HTML)
+**需求**：`footprint.html` 不需要居中的 `.container` 容器，必须是**全屏展示**。
+* 请修改 HTML/CSS，让 `<div id="china-map">` 铺满整个浏览器窗口 (`width: 100vw; height: 100vh; position: absolute; top:0; left:0;`)。
+* 确保地图之上的 UI 元素（如“返回”按钮、“新建”按钮）使用绝对定位悬浮在地图上方。
+
+## Goal 3: 地图交互 UI 重构 (Core Feature)
+**需求**：实现类似“标记钉 + 连线 + 悬浮卡片”的视觉效果（参考很多旅游大屏的设计）。
+* **地图标记 (Pin)**：在有足迹的省份中心显示一个标记点（使用 ECharts 的 `scatter` 散点图系列）。
+* **悬浮卡片 (Card)**：
+    * **不要**把卡片画在 Canvas 里（太丑且难交互），请使用 **HTML DOM 元素** 覆盖在地图上方。
+    * 每个足迹相册对应一个卡片，显示：**相册封面图 (coverImage)** + **相册标题**。
+    * **交互**：点击卡片打开详情模态框（复用现有的详情 Modal）。
+* **连接线 (Line)**：
+    * 在“地图标记点”和“悬浮卡片”之间画一条线。
+    * 可以使用 SVG 元素或者 ECharts 的 `lines` 系列（如果卡片也是 Canvas 元素），或者简单的 CSS 连线。
+    * *建议方案*：使用 HTML 卡片绝对定位，位置通过 `myChart.convertToPixel('geo', [lon, lat])` 计算得出。卡片位置偏移一点（例如 `x+50, y-50`），然后用 CSS 或 SVG 画线连接。
+
+# Implementation Steps (请按此生成代码)
+
+## 1. Backend Changes
+* 修改 `FootprintMapper.xml`: 优化查询，支持列表并关联查询第一张照片作为封面。
+* 修改 `FootprintServiceImpl.java`: 移除创建时的唯一性检查。
+
+## 2. Frontend Layout (`footprint.html`)
+* 重写 CSS，实现全屏无边距布局。
+* 引入一个 SVG 层 `<svg id="lines-layer">` 用于画连接线（覆盖在地图上，但在卡片下）。
+* 引入一个 DIV 层 `<div id="cards-layer">` 用于存放悬浮卡片。
+
+## 3. Frontend Logic (JS)
+请重写 `renderMap()` 和数据加载逻辑：
+1.  **加载数据**：调用后端接口获取当前用户的所有足迹列表。
+2.  **渲染 Scatter**：在 ECharts 地图上，为有足迹的省份添加散点标记。
+3.  **渲染 Cards & Lines (关键)**：
+    * 编写 `updateOverlay()` 函数。
+    * 遍历足迹列表，使用 `chart.convertToPixel` 获取省份的屏幕坐标 `(x, y)`。
+    * **算法**：如果一个省份有多个相册，请将卡片呈扇形或列表状排列，避免重叠。
+    * **DOM 操作**：动态生成 HTML 卡片，设置 `top/left`。
+    * **连线**：在 SVG 层中绘制 `<line>`，连接 `(省份x, 省份y)` 到 `(卡片中心x, 卡片中心y)`。
+4.  **事件监听**：
+    * 监听 `myChart.on('georoam')` (缩放/拖拽) 和 `window.onresize`。
+    * 在这些事件触发时，**重新调用** `updateOverlay()`，确保卡片和线条跟随地图移动。
+
+# Constraints
+* **严禁修改** OSS 上传、用户登录等其他模块的代码。
+* 保持代码整洁，注释清晰。
+* 前端卡片样式要美观：半透明磨砂玻璃效果，圆角，封面图铺满。
+
+请给出完整的、修改后的代码文件内容。

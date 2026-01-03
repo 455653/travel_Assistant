@@ -18,7 +18,8 @@ public class TravelFootprint {
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalDateTime createTime;
-
+    
     private String creatorUsername;
     private String provinceName;
+    private String coverImage;
 }

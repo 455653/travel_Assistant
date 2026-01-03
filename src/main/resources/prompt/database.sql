@@ -151,6 +151,75 @@ create table friendship
 create index idx_friend
     on friendship (friend_id);
 
+create table travel_footprint
+(
+    id          bigint auto_increment comment '足迹ID'
+        primary key,
+    creator_id  bigint                              not null comment '创建者用户ID',
+    province_id bigint                              not null comment '所属省份ID',
+    title       varchar(100)                        not null comment '相册标题',
+    start_date  date                                null comment '开始日期',
+    end_date    date                                null comment '结束日期',
+    create_time timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    constraint travel_footprint_ibfk_1
+        foreign key (creator_id) references users (id)
+            on delete cascade,
+    constraint travel_footprint_ibfk_2
+        foreign key (province_id) references province (id)
+            on delete cascade
+)
+    comment '旅行足迹相册表' charset = utf8mb4;
+
+create table footprint_collaborator
+(
+    id           bigint auto_increment comment '协作ID'
+        primary key,
+    footprint_id bigint                              not null comment '足迹相册ID',
+    user_id      bigint                              not null comment '协作者用户ID',
+    create_time  timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    constraint idx_footprint_user
+        unique (footprint_id, user_id),
+    constraint footprint_collaborator_ibfk_1
+        foreign key (footprint_id) references travel_footprint (id)
+            on delete cascade,
+    constraint footprint_collaborator_ibfk_2
+        foreign key (user_id) references users (id)
+            on delete cascade
+)
+    comment '足迹协作者表' charset = utf8mb4;
+
+create index idx_user
+    on footprint_collaborator (user_id);
+
+create table footprint_photo
+(
+    id           bigint auto_increment comment '照片ID'
+        primary key,
+    footprint_id bigint                              not null comment '所属足迹相册ID',
+    uploader_id  bigint                              not null comment '上传者用户ID',
+    image_url    varchar(500)                        not null comment '照片OSS地址',
+    create_time  timestamp default CURRENT_TIMESTAMP null comment '上传时间',
+    constraint footprint_photo_ibfk_1
+        foreign key (footprint_id) references travel_footprint (id)
+            on delete cascade,
+    constraint footprint_photo_ibfk_2
+        foreign key (uploader_id) references users (id)
+            on delete cascade
+)
+    comment '足迹照片表' charset = utf8mb4;
+
+create index idx_footprint
+    on footprint_photo (footprint_id);
+
+create index idx_uploader
+    on footprint_photo (uploader_id);
+
+create index idx_creator
+    on travel_footprint (creator_id);
+
+create index idx_province
+    on travel_footprint (province_id);
+
 create index idx_username
     on users (username);
 

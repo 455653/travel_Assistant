@@ -15,45 +15,147 @@
             box-sizing: border-box;
         }
 
-        body {
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #china-map {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
         }
 
-        .container-fluid {
-            max-width: 1400px;
-            margin: 0 auto;
+        #lines-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
         }
 
-        .header {
+        #cards-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .footprint-card {
+            position: absolute;
+            width: 220px;
             background: rgba(255, 255, 255, 0.95);
-            padding: 20px 30px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            pointer-events: auto;
+        }
+
+        .footprint-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-cover {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .card-body {
+            padding: 12px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-meta {
+            font-size: 11px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .top-bar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            z-index: 10;
+            pointer-events: none;
         }
 
-        .header h1 {
-            color: #333;
-            font-size: 28px;
-            margin: 0;
+        .top-bar > * {
+            pointer-events: auto;
         }
 
-        .map-container {
+        .title-box {
             background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            border-radius: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        #mapChart {
-            width: 100%;
-            height: 600px;
+        .title-box h1 {
+            margin: 0;
+            font-size: 20px;
+            color: #333;
+        }
+
+        .btn-group-custom {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-custom {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            color: #667eea;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
         }
 
         .photo-grid {
@@ -116,76 +218,47 @@
             margin-bottom: 20px;
         }
 
-        .upload-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        .loading-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px 50px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            display: none;
         }
 
-        .back-link {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .back-link:hover {
-            text-decoration: underline;
-        }
-
-        .footprint-card {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .footprint-card:hover {
-            background: #e9ecef;
-            transform: translateX(5px);
-        }
-
-        .footprint-card h5 {
-            margin: 0 0 5px 0;
-            color: #333;
-        }
-
-        .footprint-card p {
-            margin: 0;
-            font-size: 14px;
-            color: #666;
+        .loading-overlay.show {
+            display: block;
         }
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="header">
-            <h1>🗺️ 旅行足迹</h1>
-            <div>
-                <span id="headerUsername" style="margin-right: 20px; color: #666;"></span>
-                <a href="home.html" class="back-link">返回首页</a>
-            </div>
-        </div>
+    <div id="china-map"></div>
 
-        <div class="map-container">
-            <h4 style="margin-bottom: 15px;">点击省份查看您的旅行足迹</h4>
-            <div id="mapChart"></div>
+    <svg id="lines-layer"></svg>
+
+    <div id="cards-layer"></div>
+
+    <div class="top-bar">
+        <div class="title-box">
+            <span>🗺️</span>
+            <h1>旅行足迹</h1>
+            <span id="userName" style="color: #999; font-size: 14px;"></span>
+        </div>
+        <div class="btn-group-custom">
+            <button class="btn-custom btn-primary-custom" onclick="showCreateModal()">+ 新建足迹</button>
+            <button class="btn-custom" onclick="window.location.href='home.html'">返回首页</button>
         </div>
     </div>
 
-    <!-- 足迹列表模态框 -->
-    <div class="modal fade" id="footprintListModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="footprintListTitle">选择足迹相册</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <button class="btn btn-primary mb-3" onclick="showCreateModal()">+ 创建新足迹</button>
-                    <div id="footprintList"></div>
-                </div>
-            </div>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div style="text-align: center;">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p style="margin-top: 10px; color: #666;">加载中...</p>
         </div>
     </div>
 
@@ -198,6 +271,12 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">选择省份<span class="text-danger">*</span></label>
+                        <select class="form-select" id="provinceSelect">
+                            <option value="">请选择省份</option>
+                        </select>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label">相册标题<span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="footprintTitle" placeholder="如：武汉樱花之旅">
@@ -249,10 +328,11 @@
 
     <script>
         let currentUser = null;
-        let currentProvinceId = null;
-        let currentProvinceName = null;
+        let myChart = null;
+        let allFootprints = [];
+        let allProvinces = [];
+        let provinceCoords = {};
         let currentFootprintId = null;
-        let provinceIdMap = {};
 
         $(document).ready(function() {
             const userStr = localStorage.getItem('user');
@@ -263,151 +343,244 @@
             }
 
             currentUser = JSON.parse(userStr);
-            $('#headerUsername').text('当前用户：' + currentUser.username);
+            $('#userName').text(currentUser.username);
 
-            loadProvinces();
+            init();
         });
 
+        async function init() {
+            $('#loadingOverlay').addClass('show');
+            try {
+                await loadProvinces();
+                await loadFootprints();
+                await initMap();
+            } catch (error) {
+                console.error('初始化失败:', error);
+                alert('加载失败，请刷新页面重试');
+            } finally {
+                $('#loadingOverlay').removeClass('show');
+            }
+        }
+
         function loadProvinces() {
-            $.ajax({
-                url: '/api/provinces',
-                method: 'GET',
-                success: function(response) {
-                    if (response.code === 200) {
-                        const provinces = response.data;
-                        provinces.forEach(p => {
-                            provinceIdMap[p.name] = p.id;
-                        });
-                        initMap();
-                    } else {
-                        console.error('加载省份失败:', response.msg);
-                        alert('加载省份数据失败，请刷新页面重试');
-                    }
-                },
-                error: function(error) {
-                    console.error('加载省份失败:', error);
-                    alert('加载省份数据失败，请刷新页面重试');
-                }
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    url: '/api/provinces',
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.code === 200) {
+                            allProvinces = response.data;
+                            resolve();
+                        } else {
+                            reject(new Error(response.msg));
+                        }
+                    },
+                    error: reject
+                });
+            });
+        }
+
+        function loadFootprints() {
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    url: '/api/footprint/all',
+                    method: 'GET',
+                    data: { userId: currentUser.id },
+                    success: function(response) {
+                        if (response.code === 200) {
+                            allFootprints = response.data;
+                            resolve();
+                        } else {
+                            reject(new Error(response.msg));
+                        }
+                    },
+                    error: reject
+                });
             });
         }
 
         function initMap() {
-            const myChart = echarts.init(document.getElementById('mapChart'));
+            return new Promise((resolve, reject) => {
+                myChart = echarts.init(document.getElementById('china-map'));
 
-            myChart.showLoading({
-                text: '地图加载中...',
-                color: '#667eea'
-            });
+                $.ajax({
+                    url: 'https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json',
+                    dataType: 'json',
+                    success: function(geoJson) {
+                        echarts.registerMap('china', geoJson);
 
-            $.ajax({
-                url: 'https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json',
-                dataType: 'json',
-                success: function(geoJson) {
-                    myChart.hideLoading();
-                    echarts.registerMap('china', geoJson);
-
-                    const option = {
-                        tooltip: {
-                            trigger: 'item',
-                            formatter: '{b}'
-                        },
-                        visualMap: {
-                            show: false,
-                            min: 0,
-                            max: 1,
-                            inRange: {
-                                color: ['#e0e0e0', '#667eea']
+                        geoJson.features.forEach(feature => {
+                            const name = feature.properties.name;
+                            const center = feature.properties.center || feature.properties.centroid;
+                            if (center) {
+                                provinceCoords[name] = center;
                             }
-                        },
-                        series: [{
-                            name: '中国地图',
-                            type: 'map',
-                            map: 'china',
-                            roam: true,
-                            label: {
-                                show: true,
-                                fontSize: 10
-                            },
-                            emphasis: {
-                                label: {
-                                    show: true,
-                                    fontSize: 12
-                                },
-                                itemStyle: {
-                                    areaColor: '#764ba2'
+                        });
+
+                        const scatterData = [];
+                        const provinceFootprintMap = {};
+
+                        allFootprints.forEach(f => {
+                            if (!provinceFootprintMap[f.provinceName]) {
+                                provinceFootprintMap[f.provinceName] = [];
+                            }
+                            provinceFootprintMap[f.provinceName].push(f);
+                        });
+
+                        Object.keys(provinceFootprintMap).forEach(provinceName => {
+                            const coord = provinceCoords[provinceName];
+                            if (coord) {
+                                scatterData.push({
+                                    name: provinceName,
+                                    value: coord.concat([provinceFootprintMap[provinceName].length])
+                                });
+                            }
+                        });
+
+                        const option = {
+                            tooltip: {
+                                trigger: 'item',
+                                formatter: function(params) {
+                                    if (params.seriesType === 'scatter') {
+                                        return params.name + '<br/>足迹数量: ' + params.value[2];
+                                    }
+                                    return params.name;
                                 }
                             },
-                            data: []
-                        }]
-                    };
+                            geo: {
+                                map: 'china',
+                                roam: true,
+                                label: {
+                                    show: false
+                                },
+                                itemStyle: {
+                                    areaColor: 'rgba(255, 255, 255, 0.3)',
+                                    borderColor: 'rgba(255, 255, 255, 0.8)',
+                                    borderWidth: 1
+                                },
+                                emphasis: {
+                                    itemStyle: {
+                                        areaColor: 'rgba(255, 255, 255, 0.5)'
+                                    }
+                                }
+                            },
+                            series: [{
+                                type: 'scatter',
+                                coordinateSystem: 'geo',
+                                data: scatterData,
+                                symbolSize: 15,
+                                itemStyle: {
+                                    color: '#ff6b6b',
+                                    shadowBlur: 10,
+                                    shadowColor: 'rgba(255, 107, 107, 0.5)'
+                                },
+                                emphasis: {
+                                    itemStyle: {
+                                        color: '#ff4757'
+                                    }
+                                }
+                            }]
+                        };
 
-                    myChart.setOption(option);
+                        myChart.setOption(option);
+                        updateOverlay();
 
-                    myChart.on('click', function(params) {
-                        if (params.componentType === 'series') {
-                            const provinceName = params.name;
-                            const provinceId = provinceIdMap[provinceName];
+                        myChart.on('georoam', updateOverlay);
+                        window.addEventListener('resize', function() {
+                            myChart.resize();
+                            updateOverlay();
+                        });
 
-                            if (provinceId) {
-                                currentProvinceId = provinceId;
-                                currentProvinceName = provinceName;
-                                loadFootprintList();
-                            } else {
-                                console.warn('未找到省份ID:', provinceName);
-                            }
-                        }
-                    });
-                },
-                error: function(error) {
-                    myChart.hideLoading();
-                    console.error('加载地图数据失败:', error);
-                    alert('加载地图数据失败，请检查网络连接');
-                }
+                        resolve();
+                    },
+                    error: reject
+                });
             });
         }
 
-        function loadFootprintList() {
-            $.ajax({
-                url: '/api/footprint/list',
-                method: 'GET',
-                data: {
-                    provinceId: currentProvinceId,
-                    userId: currentUser.id
-                },
-                success: function(response) {
-                    if (response.code === 200) {
-                        const footprints = response.data;
-                        $('#footprintListTitle').text(currentProvinceName + ' - 我的足迹');
+        function updateOverlay() {
+            const cardsLayer = document.getElementById('cards-layer');
+            const linesLayer = document.getElementById('lines-layer');
 
-                        if (footprints.length === 0) {
-                            $('#footprintList').html('<p class="text-muted">暂无足迹，点击上方按钮创建</p>');
-                        } else {
-                            let html = '';
-                            footprints.forEach(f => {
-                                const dateStr = f.startDate && f.endDate
-                                    ? `${f.startDate} 至 ${f.endDate}`
-                                    : '未设置日期';
-                                html += `
-                                    <div class="footprint-card" onclick="viewFootprintDetail(${f.id})">
-                                        <h5>${f.title}</h5>
-                                        <p>创建者: ${f.creatorUsername}</p>
-                                        <p>日期: ${dateStr}</p>
-                                    </div>
-                                `;
-                            });
-                            $('#footprintList').html(html);
-                        }
+            cardsLayer.innerHTML = '';
+            linesLayer.innerHTML = '';
 
-                        new bootstrap.Modal($('#footprintListModal')).show();
-                    } else {
-                        alert(response.msg);
-                    }
+            const provinceFootprintMap = {};
+            allFootprints.forEach(f => {
+                if (!provinceFootprintMap[f.provinceName]) {
+                    provinceFootprintMap[f.provinceName] = [];
                 }
+                provinceFootprintMap[f.provinceName].push(f);
+            });
+
+            Object.keys(provinceFootprintMap).forEach(provinceName => {
+                const coord = provinceCoords[provinceName];
+                if (!coord) return;
+
+                const pixel = myChart.convertToPixel('geo', coord);
+                if (!pixel) return;
+
+                const footprints = provinceFootprintMap[provinceName];
+                const angleStep = 360 / footprints.length;
+                const radius = footprints.length > 1 ? 150 : 100;
+
+                footprints.forEach((footprint, index) => {
+                    const angle = angleStep * index * Math.PI / 180;
+                    const offsetX = footprints.length > 1 ? Math.cos(angle) * radius : 100;
+                    const offsetY = footprints.length > 1 ? Math.sin(angle) * radius : -80;
+
+                    const cardX = pixel[0] + offsetX;
+                    const cardY = pixel[1] + offsetY;
+
+                    const card = document.createElement('div');
+                    card.className = 'footprint-card';
+                    card.style.left = cardX + 'px';
+                    card.style.top = cardY + 'px';
+                    card.style.transform = 'translate(-50%, -50%)';
+
+                    const coverUrl = footprint.coverImage || 'https://via.placeholder.com/220x140?text=No+Image';
+                    const dateStr = footprint.startDate && footprint.endDate
+                        ? `${footprint.startDate} ~ ${footprint.endDate}`
+                        : '未设置日期';
+
+                    card.innerHTML = `
+                        <img src="${coverUrl}" class="card-cover" onerror="this.src='https://via.placeholder.com/220x140?text=No+Image'">
+                        <div class="card-body">
+                            <div class="card-title">${footprint.title}</div>
+                            <div class="card-meta">
+                                <span>📍 ${footprint.provinceName}</span>
+                                <span>👤 ${footprint.creatorUsername}</span>
+                            </div>
+                            <div class="card-meta" style="margin-top: 5px;">
+                                <span style="font-size: 10px;">${dateStr}</span>
+                            </div>
+                        </div>
+                    `;
+
+                    card.onclick = function() {
+                        viewFootprintDetail(footprint.id);
+                    };
+
+                    cardsLayer.appendChild(card);
+
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', pixel[0]);
+                    line.setAttribute('y1', pixel[1]);
+                    line.setAttribute('x2', cardX);
+                    line.setAttribute('y2', cardY);
+                    line.setAttribute('stroke', 'rgba(255, 255, 255, 0.6)');
+                    line.setAttribute('stroke-width', '2');
+                    line.setAttribute('stroke-dasharray', '5,5');
+                    linesLayer.appendChild(line);
+                });
             });
         }
 
         function showCreateModal() {
-            bootstrap.Modal.getInstance($('#footprintListModal')).hide();
+            $('#provinceSelect').empty().append('<option value="">请选择省份</option>');
+            allProvinces.forEach(p => {
+                $('#provinceSelect').append(`<option value="${p.id}">${p.name}</option>`);
+            });
 
             $.ajax({
                 url: '/api/friend/list',
@@ -441,10 +614,15 @@
         }
 
         function createFootprint() {
+            const provinceId = $('#provinceSelect').val();
             const title = $('#footprintTitle').val().trim();
             const startDate = $('#startDate').val();
             const endDate = $('#endDate').val();
 
+            if (!provinceId) {
+                alert('请选择省份');
+                return;
+            }
             if (!title) {
                 alert('请输入相册标题');
                 return;
@@ -461,7 +639,7 @@
                 contentType: 'application/json',
                 data: JSON.stringify({
                     creatorId: currentUser.id,
-                    provinceId: currentProvinceId,
+                    provinceId: parseInt(provinceId),
                     title: title,
                     startDate: startDate || null,
                     endDate: endDate || null,
@@ -474,7 +652,8 @@
                         $('#footprintTitle').val('');
                         $('#startDate').val('');
                         $('#endDate').val('');
-                        loadFootprintList();
+                        $('#provinceSelect').val('');
+                        location.reload();
                     } else {
                         alert(response.msg);
                     }
@@ -484,7 +663,6 @@
 
         function viewFootprintDetail(footprintId) {
             currentFootprintId = footprintId;
-            bootstrap.Modal.getInstance($('#footprintListModal')).hide();
 
             $.ajax({
                 url: '/api/footprint/detail',
@@ -501,7 +679,7 @@
 
                         $('#detailTitle').text(footprint.title);
                         const dateStr = footprint.startDate && footprint.endDate
-                            ? `${footprint.startDate} 至 ${footprint.endDate}`
+                            ? `${footprint.startDate} ~ ${footprint.endDate}`
                             : '未设置日期';
                         $('#detailInfo').text(`${footprint.provinceName} | ${dateStr} | 创建者: ${footprint.creatorUsername}`);
 

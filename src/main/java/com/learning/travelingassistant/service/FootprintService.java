@@ -9,14 +9,16 @@ import java.util.List;
 import java.util.Map;
 
 public interface FootprintService {
-
+    
     void createFootprint(Long creatorId, FootprintDTO dto);
-
+    
     List<TravelFootprint> listFootprints(Long provinceId, Long userId);
-
+    
+    List<TravelFootprint> listAllFootprints(Long userId);
+    
     Map<String, Object> getFootprintDetail(Long footprintId, Long userId);
-
+    
     void addPhoto(Long userId, Long footprintId, String imageUrl);
-
+    
     void deletePhoto(Long userId, Long photoId);
 }
