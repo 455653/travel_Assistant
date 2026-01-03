@@ -595,7 +595,7 @@
             <div class="user-info">
                 当前用户：<span id="username"></span>
             </div>
-            <button class="back-btn" onclick="goBack()">返回上一页</button>
+            <button class="back-btn" onclick="goBack()">返回首页</button>
         </div>
     </nav>
 
@@ -1239,9 +1239,9 @@
             $('#weather-error').fadeIn();
         }
 
-        // 返回上一页
+        // 返回首页
         function goBack() {
-            window.close();
+            window.location.href = 'home.html';
         }
 
         // 返回首页
