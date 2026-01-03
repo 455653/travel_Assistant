@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.travelingassistant.mapper.FootprintMapper">
+
+    <insert id="insertFootprint" parameterType="com.learning.travelingassistant.entity.TravelFootprint" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO travel_footprint (creator_id, province_id, title, start_date, end_date, create_time)
+        VALUES (#{creatorId}, #{provinceId}, #{title}, #{startDate}, #{endDate}, NOW())
+    </insert>
+
+    <insert id="insertCollaborator" parameterType="com.learning.travelingassistant.entity.FootprintCollaborator">
+        INSERT INTO footprint_collaborator (footprint_id, user_id, create_time)
+        VALUES (#{footprintId}, #{userId}, NOW())
+    </insert>
+
+    <insert id="insertPhoto" parameterType="com.learning.travelingassistant.entity.FootprintPhoto" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO footprint_photo (footprint_id, uploader_id, image_url, create_time)
+        VALUES (#{footprintId}, #{uploaderId}, #{imageUrl}, NOW())
+    </insert>
+
+    <select id="findById" resultType="com.learning.travelingassistant.entity.TravelFootprint">
+        SELECT f.id, f.creator_id, f.province_id, f.title, f.start_date, f.end_date, f.create_time,
+               u.username as creatorUsername, p.name as provinceName
+        FROM travel_footprint f
+        LEFT JOIN users u ON f.creator_id = u.id
+        LEFT JOIN province p ON f.province_id = p.id
+        WHERE f.id = #{id}
+    </select>
+
+    <select id="findByProvinceAndUser" resultType="com.learning.travelingassistant.entity.TravelFootprint">
+        SELECT DISTINCT f.id, f.creator_id, f.province_id, f.title, f.start_date, f.end_date, f.create_time,
+               u.username as creatorUsername, p.name as provinceName
+        FROM travel_footprint f
+        JOIN footprint_collaborator c ON f.id = c.footprint_id
+        LEFT JOIN users u ON f.creator_id = u.id
+        LEFT JOIN province p ON f.province_id = p.id
+        WHERE f.province_id = #{provinceId} AND c.user_id = #{userId}
+        ORDER BY f.create_time DESC
+    </select>
+
+    <select id="findCollaborator" resultType="com.learning.travelingassistant.entity.FootprintCollaborator">
+        SELECT id, footprint_id, user_id, create_time
+        FROM footprint_collaborator
+        WHERE footprint_id = #{footprintId} AND user_id = #{userId}
+    </select>
+
+    <select id="findPhotosByFootprint" resultType="com.learning.travelingassistant.entity.FootprintPhoto">
+        SELECT p.id, p.footprint_id, p.uploader_id, p.image_url, p.create_time,
+               u.username as uploaderUsername
+        FROM footprint_photo p
+        LEFT JOIN users u ON p.uploader_id = u.id
+        WHERE p.footprint_id = #{footprintId}
+        ORDER BY p.create_time DESC
+    </select>
+
+    <select id="findPhotoById" resultType="com.learning.travelingassistant.entity.FootprintPhoto">
+        SELECT p.id, p.footprint_id, p.uploader_id, p.image_url, p.create_time,
+               u.username as uploaderUsername
+        FROM footprint_photo p
+        LEFT JOIN users u ON p.uploader_id = u.id
+        WHERE p.id = #{id}
+    </select>
+
+    <delete id="deletePhoto">
+        DELETE FROM footprint_photo WHERE id = #{id}
+    </delete>
+
+    <select id="findCollaboratorsByFootprint" resultType="com.learning.travelingassistant.entity.FootprintCollaborator">
+        SELECT c.id, c.footprint_id, c.user_id, c.create_time,
+               u.username
+        FROM footprint_collaborator c
+        LEFT JOIN users u ON c.user_id = u.id
+        WHERE c.footprint_id = #{footprintId}
+    </select>
+
+</mapper>

@@ -1,0 +1,90 @@
+# Role
+你是一名资深 Java Spring Boot 全栈开发工程师。
+我正在开发一个“中国旅游助手”项目（Spring Boot 3 + MyBatis + MySQL + jQuery）。
+目前项目已集成了**阿里云 OSS** 图片上传功能，且已有完整的用户体系（`users` 表）和好友关系体系（`friendship` 表）。
+
+# Context (现有资源)
+1.  **数据库**：
+    * `province` 表：存储省份信息（包含 `id`, `name`）。
+    * `users` 表：存储用户信息（包含 `id`, `username`, `account_id`）。
+    * `friendship` 表：存储好友关系（双向存储）。
+2.  **工具类**：项目已有 `AliOssUtil` 和 `UploadController`，支持图片上传并返回 URL。
+3.  **技术栈**：ECharts（用于地图展示）、jQuery、Bootstrap（推荐用于模态框）。
+
+# Goal
+请在现有项目中新增**“旅行足迹 (Travel Footprint)”**功能。
+这是一个基于地图的相册协作功能。
+
+# Feature Description (功能描述)
+1.  **地图交互**：页面展示一张中国地图（省份粒度）。用户点击某个省份（如“湖北”）后，触发后续操作。
+2.  **创建足迹相册**：
+    * 如果该用户在该省份还没有足迹，或者想新建一个，弹出“创建足迹”窗口。
+    * **输入项**：相册名称（如“武汉樱花之旅”）、开始日期、结束日期。
+    * **好友协作（核心）**：用户可以从自己的好友列表里勾选若干好友。
+    * **逻辑**：创建者和被选中的好友共同拥有该相册的权限。
+3.  **相册详情与协作**：
+    * 点击省份后，如果已有相册，展示相册列表。点击进入相册详情。
+    * **权限控制**：只有**创建者**和**被邀请的协作好友**可以看到此相册，并且可以**上传照片**（至 OSS）、**删除照片**。其他用户无法查看。
+    * 相册内展示所有照片，并标记是谁上传的。
+
+# Implementation Plan (请严格按此步骤生成代码)
+
+## Task 1: Database Update (SQL)
+请为我生成 MySQL 脚本，新建以下三张表：
+1.  `travel_footprint` (足迹相册表)：
+    * `id`, `creator_id` (创建者), `province_id` (关联省份), `title`, `start_date`, `end_date`, `create_time`.
+2.  `footprint_collaborator` (协作权限表)：
+    * `id`, `footprint_id`, `user_id` (协作者ID).
+    * *说明*：创建时，将创建者和被选中的好友都写入此表，后续鉴权只查这张表即可。
+3.  `footprint_photo` (照片表)：
+    * `id`, `footprint_id`, `uploader_id` (上传人), `image_url` (OSS地址), `create_time`.
+
+## Task 2: Backend Implementation (Java)
+请生成 Entity, Mapper (XML), Service, Controller 代码。
+
+### 2.1 Entity & Mapper
+* 创建对应的实体类。
+* **Mapper 重点查询**：
+    * `selectByProvinceAndUser`: 查询某用户在某省份可见的所有足迹（包括自己创建的和被邀请的）。
+        * SQL思路：`SELECT f.* FROM travel_footprint f JOIN footprint_collaborator c ON f.id = c.footprint_id WHERE f.province_id = ? AND c.user_id = ?`
+    * `selectPhotos`: 查询相册下的所有照片（带上传者信息）。
+
+### 2.2 Service Logic (`FootprintService`)
+* `createFootprint(Long creatorId, FootprintDTO dto)`:
+    * 开启事务。
+    * 插入 `travel_footprint`。
+    * 批量插入 `footprint_collaborator` (必须包含 creatorId 自己，以及 dto.friendIds)。
+* `addPhoto(Long userId, Long footprintId, String imageUrl)`:
+    * **鉴权（关键）**：先检查 `footprint_collaborator` 表，确认 `userId` 是否关联了 `footprintId`。如果没关联，抛出“无权操作”异常。
+    * 鉴权通过后，插入 `footprint_photo`。
+* `deletePhoto(Long userId, Long photoId)`:
+    * **鉴权**：查询照片信息，只有照片的**上传者**或者相册的**创建者**有权删除。
+
+### 2.3 Controller (`FootprintController`)
+* `GET /api/footprint/list?provinceId=xx` (获取某省可见相册)
+* `POST /api/footprint/create` (创建相册+邀请好友)
+* `POST /api/footprint/photo/add` (上传照片记录)
+* `POST /api/footprint/photo/delete`
+* `GET /api/footprint/detail?id=xx` (获取相册详情及照片)
+
+## Task 3: Frontend Implementation (`footprint.html`)
+请创建一个新的 HTML 页面，包含以下内容：
+1.  **地图容器**：使用 ECharts 渲染中国地图（你需要提供一段 ECharts 初始化代码，地图数据 JSON URL 可以使用公共 CDN，例如 `https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json`）。
+2.  **点击事件**：
+    * 监听 `myChart.on('click', ...)`。
+    * 获取点击的省份名称/ID，调用后端接口查询该省份的足迹列表。
+3.  **模态框 (Modals)**：
+    * **创建模态框**：包含标题输入、日期选择、**好友多选列表**（加载好友列表并渲染为 Checkbox）。
+    * **相册详情模态框**：
+        * 顶部显示相册信息。
+        * 中部是照片网格（Grid）。
+        * 有一个醒目的“上传照片”按钮（点击触发隐藏的 file input -> Ajax 上传 OSS -> 拿到 URL -> 调用 `photo/add` 接口）。
+        * 每张照片如果是自己上传的，显示删除按钮。
+
+# Constraints
+* **不要**修改现有的 OSS 上传接口，前端直接复用 `/api/upload/oss`。
+* 确保权限控制严格，防止用户通过接口恶意查看别人的私密相册。
+* 代码风格与现有项目保持一致（使用 `Result` 类返回）。
+* **SQL 脚本请单独列出**，我需要在数据库运行。
+
+请为我生成完整、详细的代码实现。

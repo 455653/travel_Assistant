@@ -60,13 +60,24 @@ create table users
     id          bigint auto_increment comment '用户ID'
         primary key,
     username    varchar(50)                         not null comment '用户名',
+    account_id  varchar(30)                         null comment '用户自定义帐号ID',
     password    varchar(255)                        not null comment '密码',
+    real_name   varchar(50)                         null comment '真实姓名',
+    id_card     varchar(20)                         null comment '身份证号',
+    phone       varchar(20)                         null comment '手机号',
+    email       varchar(100)                        null comment '邮箱',
     create_time timestamp default CURRENT_TIMESTAMP null comment '创建时间',
     update_time timestamp default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '更新时间',
+    constraint idx_account_id
+        unique (account_id),
+    constraint idx_id_card
+        unique (id_card),
+    constraint idx_phone
+        unique (phone),
     constraint username
         unique (username)
 )
-    comment '用户表' charset = utf8mb4;
+    comment '用户表';
 
 create table comment
 (
@@ -76,6 +87,7 @@ create table comment
     user_id       bigint                              not null comment '用户ID',
     content       text                                not null comment '评论内容',
     create_time   timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    image_url     varchar(500)                        null comment '评论图片URL',
     constraint comment_ibfk_1
         foreign key (attraction_id) references attraction (id)
             on delete cascade,
@@ -94,29 +106,51 @@ create index idx_create_time
 create index idx_user_id
     on comment (user_id);
 
+create table friend_request
+(
+    id          bigint auto_increment comment '请求ID'
+        primary key,
+    sender_id   bigint                              not null comment '发送者用户ID',
+    receiver_id bigint                              not null comment '接收者用户ID',
+    status      tinyint   default 0                 null comment '状态: 0=待处理, 1=已同意, 2=已拒绝',
+    create_time timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    update_time timestamp default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '更新时间',
+    constraint friend_request_ibfk_1
+        foreign key (sender_id) references users (id)
+            on delete cascade,
+    constraint friend_request_ibfk_2
+        foreign key (receiver_id) references users (id)
+            on delete cascade
+)
+    comment '好友请求表' charset = utf8mb4;
+
+create index idx_receiver_status
+    on friend_request (receiver_id, status);
+
+create index idx_sender
+    on friend_request (sender_id);
+
+create table friendship
+(
+    id          bigint auto_increment comment '关系ID'
+        primary key,
+    user_id     bigint                              not null comment '用户ID',
+    friend_id   bigint                              not null comment '好友ID',
+    create_time timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    constraint idx_user_friend
+        unique (user_id, friend_id),
+    constraint friendship_ibfk_1
+        foreign key (user_id) references users (id)
+            on delete cascade,
+    constraint friendship_ibfk_2
+        foreign key (friend_id) references users (id)
+            on delete cascade
+)
+    comment '好友关系表' charset = utf8mb4;
+
+create index idx_friend
+    on friendship (friend_id);
+
 create index idx_username
     on users (username);
-
-create
-definer = root@localhost procedure InsertAllComments()
-BEGIN
-    DECLARE v_user_id INT DEFAULT 1;
-    DECLARE v_attraction_id INT DEFAULT 1;
-    -- 获取最大景点ID（假设你已插入所有省份的景点，总数量=34*15=510）
-    DECLARE max_attraction_id INT DEFAULT 510;
-
-    -- 循环每个用户
-    WHILE v_user_id <= 10 DO
-        -- 循环每个景点
-        SET v_attraction_id = 1;
-        WHILE v_attraction_id <= max_attraction_id DO
-            -- 插入随机评论内容（模拟不同评论）
-            INSERT INTO comment (attraction_id, user_id, content)
-            VALUES (v_attraction_id, v_user_id,
-                CONCAT('用户', v_user_id, '评价：这个景点非常不错，值得一去！评分', FLOOR(RAND()*10)/2 + 4, '分，推荐游览时间', FLOOR(RAND()*5)+1, '小时。'));
-            SET v_attraction_id = v_attraction_id + 1;
-END WHILE;
-        SET v_user_id = v_user_id + 1;
-END WHILE;
-END;
 

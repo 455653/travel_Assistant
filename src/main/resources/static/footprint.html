@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旅行足迹 - 中国旅游助手</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container-fluid {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin: 0;
+        }
+
+        .map-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        #mapChart {
+            width: 100%;
+            height: 600px;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .photo-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .photo-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            color: white;
+            padding: 10px;
+            font-size: 12px;
+        }
+
+        .photo-delete {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .photo-item:hover .photo-delete {
+            display: block;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .back-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .footprint-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .footprint-card:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .footprint-card h5 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+
+        .footprint-card p {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="header">
+            <h1>🗺️ 旅行足迹</h1>
+            <div>
+                <span id="headerUsername" style="margin-right: 20px; color: #666;"></span>
+                <a href="home.html" class="back-link">返回首页</a>
+            </div>
+        </div>
+
+        <div class="map-container">
+            <h4 style="margin-bottom: 15px;">点击省份查看您的旅行足迹</h4>
+            <div id="mapChart"></div>
+        </div>
+    </div>
+
+    <!-- 足迹列表模态框 -->
+    <div class="modal fade" id="footprintListModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="footprintListTitle">选择足迹相册</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <button class="btn btn-primary mb-3" onclick="showCreateModal()">+ 创建新足迹</button>
+                    <div id="footprintList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建足迹模态框 -->
+    <div class="modal fade" id="createFootprintModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">创建旅行足迹</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">相册标题<span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="footprintTitle" placeholder="如：武汉樱花之旅">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">开始日期</label>
+                        <input type="date" class="form-control" id="startDate">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">结束日期</label>
+                        <input type="date" class="form-control" id="endDate">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">邀请好友协作</label>
+                        <div id="friendsList" style="max-height: 200px; overflow-y: auto;"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="createFootprint()">创建</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 足迹详情模态框 -->
+    <div class="modal fade" id="footprintDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" id="detailTitle"></h5>
+                        <small class="text-muted" id="detailInfo"></small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="file" id="photoInput" accept="image/*" style="display: none;" onchange="uploadPhoto()">
+                    <button class="upload-btn" onclick="$('#photoInput').click()">📷 上传照片</button>
+
+                    <div id="photoGrid" class="photo-grid"></div>
+                    <div id="emptyPhotos" style="text-align: center; padding: 40px; color: #999; display: none;">
+                        暂无照片，快来上传第一张吧！
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentProvinceId = null;
+        let currentProvinceName = null;
+        let currentFootprintId = null;
+        let provinceIdMap = {};
+
+        $(document).ready(function() {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                alert('请先登录');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            currentUser = JSON.parse(userStr);
+            $('#headerUsername').text('当前用户：' + currentUser.username);
+
+            loadProvinces();
+        });
+
+        function loadProvinces() {
+            $.ajax({
+                url: '/api/provinces',
+                method: 'GET',
+                success: function(response) {
+                    if (response.code === 200) {
+                        const provinces = response.data;
+                        provinces.forEach(p => {
+                            provinceIdMap[p.name] = p.id;
+                        });
+                        initMap();
+                    } else {
+                        console.error('加载省份失败:', response.msg);
+                        alert('加载省份数据失败，请刷新页面重试');
+                    }
+                },
+                error: function(error) {
+                    console.error('加载省份失败:', error);
+                    alert('加载省份数据失败，请刷新页面重试');
+                }
+            });
+        }
+
+        function initMap() {
+            const myChart = echarts.init(document.getElementById('mapChart'));
+
+            myChart.showLoading({
+                text: '地图加载中...',
+                color: '#667eea'
+            });
+
+            $.ajax({
+                url: 'https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json',
+                dataType: 'json',
+                success: function(geoJson) {
+                    myChart.hideLoading();
+                    echarts.registerMap('china', geoJson);
+
+                    const option = {
+                        tooltip: {
+                            trigger: 'item',
+                            formatter: '{b}'
+                        },
+                        visualMap: {
+                            show: false,
+                            min: 0,
+                            max: 1,
+                            inRange: {
+                                color: ['#e0e0e0', '#667eea']
+                            }
+                        },
+                        series: [{
+                            name: '中国地图',
+                            type: 'map',
+                            map: 'china',
+                            roam: true,
+                            label: {
+                                show: true,
+                                fontSize: 10
+                            },
+                            emphasis: {
+                                label: {
+                                    show: true,
+                                    fontSize: 12
+                                },
+                                itemStyle: {
+                                    areaColor: '#764ba2'
+                                }
+                            },
+                            data: []
+                        }]
+                    };
+
+                    myChart.setOption(option);
+
+                    myChart.on('click', function(params) {
+                        if (params.componentType === 'series') {
+                            const provinceName = params.name;
+                            const provinceId = provinceIdMap[provinceName];
+
+                            if (provinceId) {
+                                currentProvinceId = provinceId;
+                                currentProvinceName = provinceName;
+                                loadFootprintList();
+                            } else {
+                                console.warn('未找到省份ID:', provinceName);
+                            }
+                        }
+                    });
+                },
+                error: function(error) {
+                    myChart.hideLoading();
+                    console.error('加载地图数据失败:', error);
+                    alert('加载地图数据失败，请检查网络连接');
+                }
+            });
+        }
+
+        function loadFootprintList() {
+            $.ajax({
+                url: '/api/footprint/list',
+                method: 'GET',
+                data: {
+                    provinceId: currentProvinceId,
+                    userId: currentUser.id
+                },
+                success: function(response) {
+                    if (response.code === 200) {
+                        const footprints = response.data;
+                        $('#footprintListTitle').text(currentProvinceName + ' - 我的足迹');
+
+                        if (footprints.length === 0) {
+                            $('#footprintList').html('<p class="text-muted">暂无足迹，点击上方按钮创建</p>');
+                        } else {
+                            let html = '';
+                            footprints.forEach(f => {
+                                const dateStr = f.startDate && f.endDate
+                                    ? `${f.startDate} 至 ${f.endDate}`
+                                    : '未设置日期';
+                                html += `
+                                    <div class="footprint-card" onclick="viewFootprintDetail(${f.id})">
+                                        <h5>${f.title}</h5>
+                                        <p>创建者: ${f.creatorUsername}</p>
+                                        <p>日期: ${dateStr}</p>
+                                    </div>
+                                `;
+                            });
+                            $('#footprintList').html(html);
+                        }
+
+                        new bootstrap.Modal($('#footprintListModal')).show();
+                    } else {
+                        alert(response.msg);
+                    }
+                }
+            });
+        }
+
+        function showCreateModal() {
+            bootstrap.Modal.getInstance($('#footprintListModal')).hide();
+
+            $.ajax({
+                url: '/api/friend/list',
+                method: 'GET',
+                data: { userId: currentUser.id },
+                success: function(response) {
+                    if (response.code === 200) {
+                        const friends = response.data;
+                        let html = '';
+
+                        if (friends.length === 0) {
+                            html = '<p class="text-muted">暂无好友</p>';
+                        } else {
+                            friends.forEach(f => {
+                                html += `
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="${f.friendId}" id="friend${f.friendId}">
+                                        <label class="form-check-label" for="friend${f.friendId}">
+                                            ${f.friendUsername} (${f.friendAccountId || '未设置ID'})
+                                        </label>
+                                    </div>
+                                `;
+                            });
+                        }
+
+                        $('#friendsList').html(html);
+                        new bootstrap.Modal($('#createFootprintModal')).show();
+                    }
+                }
+            });
+        }
+
+        function createFootprint() {
+            const title = $('#footprintTitle').val().trim();
+            const startDate = $('#startDate').val();
+            const endDate = $('#endDate').val();
+
+            if (!title) {
+                alert('请输入相册标题');
+                return;
+            }
+
+            const friendIds = [];
+            $('#friendsList input:checked').each(function() {
+                friendIds.push(parseInt($(this).val()));
+            });
+
+            $.ajax({
+                url: '/api/footprint/create',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    creatorId: currentUser.id,
+                    provinceId: currentProvinceId,
+                    title: title,
+                    startDate: startDate || null,
+                    endDate: endDate || null,
+                    friendIds: friendIds
+                }),
+                success: function(response) {
+                    if (response.code === 200) {
+                        alert('创建成功！');
+                        bootstrap.Modal.getInstance($('#createFootprintModal')).hide();
+                        $('#footprintTitle').val('');
+                        $('#startDate').val('');
+                        $('#endDate').val('');
+                        loadFootprintList();
+                    } else {
+                        alert(response.msg);
+                    }
+                }
+            });
+        }
+
+        function viewFootprintDetail(footprintId) {
+            currentFootprintId = footprintId;
+            bootstrap.Modal.getInstance($('#footprintListModal')).hide();
+
+            $.ajax({
+                url: '/api/footprint/detail',
+                method: 'GET',
+                data: {
+                    id: footprintId,
+                    userId: currentUser.id
+                },
+                success: function(response) {
+                    if (response.code === 200) {
+                        const data = response.data;
+                        const footprint = data.footprint;
+                        const photos = data.photos;
+
+                        $('#detailTitle').text(footprint.title);
+                        const dateStr = footprint.startDate && footprint.endDate
+                            ? `${footprint.startDate} 至 ${footprint.endDate}`
+                            : '未设置日期';
+                        $('#detailInfo').text(`${footprint.provinceName} | ${dateStr} | 创建者: ${footprint.creatorUsername}`);
+
+                        if (photos.length === 0) {
+                            $('#photoGrid').hide();
+                            $('#emptyPhotos').show();
+                        } else {
+                            $('#emptyPhotos').hide();
+                            $('#photoGrid').show();
+
+                            let html = '';
+                            photos.forEach(p => {
+                                const canDelete = p.uploaderId === currentUser.id || footprint.creatorId === currentUser.id;
+                                html += `
+                                    <div class="photo-item">
+                                        <img src="${p.imageUrl}" alt="照片">
+                                        <div class="photo-info">
+                                            上传者: ${p.uploaderUsername}<br>
+                                            ${new Date(p.createTime).toLocaleString()}
+                                        </div>
+                                        ${canDelete ? `<button class="photo-delete" onclick="deletePhoto(${p.id})">×</button>` : ''}
+                                    </div>
+                                `;
+                            });
+                            $('#photoGrid').html(html);
+                        }
+
+                        new bootstrap.Modal($('#footprintDetailModal')).show();
+                    } else {
+                        alert(response.msg);
+                    }
+                }
+            });
+        }
+
+        function uploadPhoto() {
+            const file = $('#photoInput')[0].files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            $.ajax({
+                url: '/api/upload/image',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.code === 200) {
+                        const imageUrl = response.data;
+
+                        $.ajax({
+                            url: '/api/footprint/photo/add',
+                            method: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({
+                                userId: currentUser.id,
+                                footprintId: currentFootprintId,
+                                imageUrl: imageUrl
+                            }),
+                            success: function(response) {
+                                if (response.code === 200) {
+                                    alert('上传成功！');
+                                    $('#photoInput').val('');
+                                    viewFootprintDetail(currentFootprintId);
+                                } else {
+                                    alert(response.msg);
+                                }
+                            }
+                        });
+                    } else {
+                        alert(response.msg);
+                    }
+                }
+            });
+        }
+
+        function deletePhoto(photoId) {
+            if (!confirm('确定要删除这张照片吗？')) return;
+
+            $.ajax({
+                url: '/api/footprint/photo/delete',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    userId: currentUser.id,
+                    photoId: photoId
+                }),
+                success: function(response) {
+                    if (response.code === 200) {
+                        alert('删除成功！');
+                        viewFootprintDetail(currentFootprintId);
+                    } else {
+                        alert(response.msg);
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
