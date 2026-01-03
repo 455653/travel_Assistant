@@ -20,6 +20,7 @@
             height: 100%;
             overflow: hidden;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
         }
 
         #china-map {
@@ -28,7 +29,7 @@
             position: absolute;
             top: 0;
             left: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(to bottom, #e8f4f8 0%, #f5f7fa 100%);
         }
 
         #lines-layer {
@@ -53,55 +54,64 @@
 
         .footprint-card {
             position: absolute;
-            width: 220px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            width: 240px;
+            background: white;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             cursor: pointer;
             transition: all 0.3s ease;
             pointer-events: auto;
+            border: 1px solid rgba(0, 0, 0, 0.06);
         }
 
         .footprint-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
         }
 
         .card-cover {
             width: 100%;
-            height: 140px;
+            height: 160px;
             object-fit: cover;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%);
         }
 
         .card-body {
-            padding: 12px;
+            padding: 15px;
+            background: white;
         }
 
         .card-title {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
+            color: #2c3e50;
+            margin-bottom: 8px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
         .card-meta {
-            font-size: 11px;
-            color: #666;
+            font-size: 12px;
+            color: #7f8c8d;
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .card-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .top-bar {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
+            top: 25px;
+            left: 25px;
+            right: 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -114,48 +124,65 @@
         }
 
         .title-box {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 12px 24px;
-            border-radius: 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            background: white;
+            padding: 14px 28px;
+            border-radius: 50px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
         }
 
         .title-box h1 {
             margin: 0;
-            font-size: 20px;
-            color: #333;
+            font-size: 18px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .title-icon {
+            font-size: 22px;
+        }
+
+        .user-name {
+            color: #95a5a6;
+            font-size: 13px;
+            font-weight: normal;
         }
 
         .btn-group-custom {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
 
         .btn-custom {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            color: #667eea;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-weight: 600;
+            background: white;
+            color: #5a6c7d;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            padding: 11px 24px;
+            border-radius: 25px;
+            font-weight: 500;
+            font-size: 14px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
             transition: all 0.3s ease;
         }
 
         .btn-custom:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-color: rgba(0, 0, 0, 0.12);
         }
 
         .btn-primary-custom {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            border: none;
+        }
+
+        .btn-primary-custom:hover {
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
         }
 
         .photo-grid {
@@ -223,16 +250,25 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px 50px;
+            background: white;
+            padding: 35px 60px;
             border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
             z-index: 100;
             display: none;
         }
 
         .loading-overlay.show {
             display: block;
+        }
+
+        .province-pin {
+            width: 12px;
+            height: 12px;
+            background: #ff6b6b;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
         }
     </style>
 </head>
@@ -245,20 +281,20 @@
 
     <div class="top-bar">
         <div class="title-box">
-            <span>🗺️</span>
+            <span class="title-icon">🗺️</span>
             <h1>旅行足迹</h1>
-            <span id="userName" style="color: #999; font-size: 14px;"></span>
+            <span id="userName" class="user-name"></span>
         </div>
         <div class="btn-group-custom">
-            <button class="btn-custom btn-primary-custom" onclick="showCreateModal()">+ 新建足迹</button>
-            <button class="btn-custom" onclick="window.location.href='home.html'">返回首页</button>
+            <button class="btn-custom btn-primary-custom" onclick="showCreateModal()">✨ 新建足迹</button>
+            <button class="btn-custom" onclick="window.location.href='home.html'">← 返回首页</button>
         </div>
     </div>
 
     <div class="loading-overlay" id="loadingOverlay">
         <div style="text-align: center;">
-            <div class="spinner-border text-primary" role="status"></div>
-            <p style="margin-top: 10px; color: #666;">加载中...</p>
+            <div class="spinner-border" style="color: #667eea;" role="status"></div>
+            <p style="margin-top: 15px; color: #5a6c7d; font-size: 14px;">加载中...</p>
         </div>
     </div>
 
@@ -451,16 +487,29 @@
                                 map: 'china',
                                 roam: true,
                                 label: {
-                                    show: false
+                                    show: true,
+                                    color: '#5a6c7d',
+                                    fontSize: 11,
+                                    fontWeight: 500
                                 },
                                 itemStyle: {
-                                    areaColor: 'rgba(255, 255, 255, 0.3)',
-                                    borderColor: 'rgba(255, 255, 255, 0.8)',
-                                    borderWidth: 1
+                                    areaColor: '#ffffff',
+                                    borderColor: '#d4dce5',
+                                    borderWidth: 1.5,
+                                    shadowColor: 'rgba(0, 0, 0, 0.05)',
+                                    shadowBlur: 10
                                 },
                                 emphasis: {
+                                    label: {
+                                        show: true,
+                                        color: '#2c3e50',
+                                        fontSize: 12,
+                                        fontWeight: 600
+                                    },
                                     itemStyle: {
-                                        areaColor: 'rgba(255, 255, 255, 0.5)'
+                                        areaColor: '#e8f4f8',
+                                        borderColor: '#667eea',
+                                        borderWidth: 2
                                     }
                                 }
                             },
@@ -468,15 +517,18 @@
                                 type: 'scatter',
                                 coordinateSystem: 'geo',
                                 data: scatterData,
-                                symbolSize: 15,
+                                symbolSize: 12,
                                 itemStyle: {
                                     color: '#ff6b6b',
-                                    shadowBlur: 10,
-                                    shadowColor: 'rgba(255, 107, 107, 0.5)'
+                                    borderColor: '#fff',
+                                    borderWidth: 3,
+                                    shadowBlur: 8,
+                                    shadowColor: 'rgba(255, 107, 107, 0.4)'
                                 },
                                 emphasis: {
                                     itemStyle: {
-                                        color: '#ff4757'
+                                        color: '#ff4757',
+                                        shadowBlur: 12
                                     }
                                 }
                             }]
@@ -513,6 +565,9 @@
                 provinceFootprintMap[f.provinceName].push(f);
             });
 
+            const mapWidth = window.innerWidth;
+            const mapHeight = window.innerHeight;
+
             Object.keys(provinceFootprintMap).forEach(provinceName => {
                 const coord = provinceCoords[provinceName];
                 if (!coord) return;
@@ -521,38 +576,55 @@
                 if (!pixel) return;
 
                 const footprints = provinceFootprintMap[provinceName];
-                const angleStep = 360 / footprints.length;
-                const radius = footprints.length > 1 ? 150 : 100;
 
                 footprints.forEach((footprint, index) => {
-                    const angle = angleStep * index * Math.PI / 180;
-                    const offsetX = footprints.length > 1 ? Math.cos(angle) * radius : 100;
-                    const offsetY = footprints.length > 1 ? Math.sin(angle) * radius : -80;
+                    let cardX, cardY;
+                    const centerX = mapWidth / 2;
+                    const centerY = mapHeight / 2;
 
-                    const cardX = pixel[0] + offsetX;
-                    const cardY = pixel[1] + offsetY;
+                    const angle = (pixel[0] - centerX) / Math.abs(pixel[0] - centerX || 1);
+                    const verticalPos = (pixel[1] - centerY) / Math.abs(pixel[1] - centerY || 1);
+
+                    const baseDistance = 200;
+                    const stackOffset = index * 80;
+
+                    if (Math.abs(pixel[0] - centerX) > Math.abs(pixel[1] - centerY)) {
+                        if (pixel[0] < centerX) {
+                            cardX = Math.max(20, pixel[0] - baseDistance - stackOffset);
+                            cardY = pixel[1] + (index - footprints.length / 2) * 30;
+                        } else {
+                            cardX = Math.min(mapWidth - 260, pixel[0] + baseDistance + stackOffset);
+                            cardY = pixel[1] + (index - footprints.length / 2) * 30;
+                        }
+                    } else {
+                        cardX = pixel[0] + (index - footprints.length / 2) * 100;
+                        if (pixel[1] < centerY) {
+                            cardY = Math.max(100, pixel[1] - baseDistance - stackOffset);
+                        } else {
+                            cardY = Math.min(mapHeight - 250, pixel[1] + baseDistance + stackOffset);
+                        }
+                    }
 
                     const card = document.createElement('div');
                     card.className = 'footprint-card';
                     card.style.left = cardX + 'px';
                     card.style.top = cardY + 'px';
-                    card.style.transform = 'translate(-50%, -50%)';
 
-                    const coverUrl = footprint.coverImage || 'https://via.placeholder.com/220x140?text=No+Image';
+                    const coverUrl = footprint.coverImage || 'https://via.placeholder.com/240x160/a8c0ff/ffffff?text=暂无照片';
                     const dateStr = footprint.startDate && footprint.endDate
                         ? `${footprint.startDate} ~ ${footprint.endDate}`
                         : '未设置日期';
 
                     card.innerHTML = `
-                        <img src="${coverUrl}" class="card-cover" onerror="this.src='https://via.placeholder.com/220x140?text=No+Image'">
+                        <img src="${coverUrl}" class="card-cover" onerror="this.src='https://via.placeholder.com/240x160/a8c0ff/ffffff?text=暂无照片'">
                         <div class="card-body">
                             <div class="card-title">${footprint.title}</div>
                             <div class="card-meta">
-                                <span>📍 ${footprint.provinceName}</span>
-                                <span>👤 ${footprint.creatorUsername}</span>
+                                <span class="card-meta-item">📍 ${footprint.provinceName}</span>
+                                <span class="card-meta-item">👤 ${footprint.creatorUsername}</span>
                             </div>
-                            <div class="card-meta" style="margin-top: 5px;">
-                                <span style="font-size: 10px;">${dateStr}</span>
+                            <div class="card-meta" style="margin-top: 6px;">
+                                <span style="font-size: 11px; color: #95a5a6;">📅 ${dateStr}</span>
                             </div>
                         </div>
                     `;
@@ -566,12 +638,19 @@
                     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                     line.setAttribute('x1', pixel[0]);
                     line.setAttribute('y1', pixel[1]);
-                    line.setAttribute('x2', cardX);
-                    line.setAttribute('y2', cardY);
-                    line.setAttribute('stroke', 'rgba(255, 255, 255, 0.6)');
+                    line.setAttribute('x2', cardX + 120);
+                    line.setAttribute('y2', cardY + 80);
+                    line.setAttribute('stroke', 'rgba(102, 126, 234, 0.25)');
                     line.setAttribute('stroke-width', '2');
                     line.setAttribute('stroke-dasharray', '5,5');
                     linesLayer.appendChild(line);
+
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', cardX + 120);
+                    circle.setAttribute('cy', cardY + 80);
+                    circle.setAttribute('r', '4');
+                    circle.setAttribute('fill', '#667eea');
+                    linesLayer.appendChild(circle);
                 });
             });
         }
