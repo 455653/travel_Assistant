@@ -3,32 +3,53 @@
 <mapper namespace="com.learning.travelingassistant.mapper.UserMapper">
 
     <select id="findByUsernameAndPassword" resultType="com.learning.travelingassistant.entity.User">
-        SELECT id, username, password, real_name, id_card, phone, email, create_time, update_time
+        SELECT id, username, account_id, password, real_name, id_card, phone, email, create_time, update_time
         FROM users
         WHERE username = #{username} AND password = #{password}
     </select>
 
     <select id="findByUsername" resultType="com.learning.travelingassistant.entity.User">
-        SELECT id, username, password, real_name, id_card, phone, email, create_time, update_time
+        SELECT id, username, account_id, password, real_name, id_card, phone, email, create_time, update_time
         FROM users
         WHERE username = #{username}
     </select>
 
     <select id="findByPhone" resultType="com.learning.travelingassistant.entity.User">
-        SELECT id, username, password, real_name, id_card, phone, email, create_time, update_time
+        SELECT id, username, account_id, password, real_name, id_card, phone, email, create_time, update_time
         FROM users
         WHERE phone = #{phone}
     </select>
 
     <select id="findByIdCard" resultType="com.learning.travelingassistant.entity.User">
-        SELECT id, username, password, real_name, id_card, phone, email, create_time, update_time
+        SELECT id, username, account_id, password, real_name, id_card, phone, email, create_time, update_time
         FROM users
         WHERE id_card = #{idCard}
     </select>
 
+    <select id="findByAccountId" resultType="com.learning.travelingassistant.entity.User">
+        SELECT id, username, account_id, password, real_name, id_card, phone, email, create_time, update_time
+        FROM users
+        WHERE account_id = #{accountId}
+    </select>
+
+    <select id="findById" resultType="com.learning.travelingassistant.entity.User">
+        SELECT id, username, account_id, password, real_name, id_card, phone, email, create_time, update_time
+        FROM users
+        WHERE id = #{id}
+    </select>
+
     <insert id="insert" parameterType="com.learning.travelingassistant.entity.User" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO users (username, password, real_name, id_card, phone, email, create_time, update_time)
-        VALUES (#{username}, #{password}, #{realName}, #{idCard}, #{phone}, #{email}, NOW(), NOW())
+        INSERT INTO users (username, account_id, password, real_name, id_card, phone, email, create_time, update_time)
+        VALUES (#{username}, #{accountId}, #{password}, #{realName}, #{idCard}, #{phone}, #{email}, NOW(), NOW())
     </insert>
+
+    <update id="updateProfile" parameterType="com.learning.travelingassistant.entity.User">
+        UPDATE users
+        SET phone = #{phone},
+            email = #{email},
+            account_id = #{accountId},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
 
 </mapper>

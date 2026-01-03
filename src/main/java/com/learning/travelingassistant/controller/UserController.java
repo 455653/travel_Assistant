@@ -53,4 +53,30 @@ public class UserController {
             return Result.error("注册失败，请稍后重试");
         }
     }
+
+    @GetMapping("/info")
+    public Result<User> getUserInfo(@RequestParam Long userId) {
+        try {
+            User user = userService.getUserInfo(userId);
+            if (user == null) {
+                return Result.error("用户不存在");
+            }
+            user.setPassword(null);
+            return Result.success(user);
+        } catch (Exception e) {
+            return Result.error("获取用户信息失败");
+        }
+    }
+
+    @PostMapping("/update")
+    public Result<String> updateProfile(@RequestBody User user) {
+        try {
+            userService.updateProfile(user);
+            return Result.success("更新成功");
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("更新失败，请稍后重试");
+        }
+    }
 }

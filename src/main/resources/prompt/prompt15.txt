@@ -1,0 +1,81 @@
+# Role
+你是一名资深 Java Spring Boot 全栈开发工程师。
+我正在开发一个“中国旅游助手”项目（Spring Boot 3 + MyBatis + MySQL + jQuery）。
+目前项目已包含用户登录、注册、景点详情、评论等功能。
+
+# Context (项目现状)
+1.  **数据库**：已有 `users` 表（包含 `id`, `username`, `password`, `real_name`, `id_card`, `phone`, `email` 等）。
+2.  **后端架构**：Controller -> Service -> Mapper (XML) -> Database。
+3.  **前端架构**：原生 HTML + jQuery + CSS (蓝紫色调风格)。
+4.  **工具类**：项目统一使用 `com.learning.travelingassistant.common.Result` 作为返回对象。
+
+# Goal
+请在**不修改现有核心业务逻辑**（如登录、景点浏览）的前提下，新增以下三个功能模块：
+1.  **个人中心 (Personal Center)**：设置自定义帐号 ID、修改手机/邮箱。
+2.  **好友请求 (Friend Request)**：搜索用户、发送请求、处理请求（同意/拒绝）。
+3.  **好友管理 (Friend Management)**：查看好友列表、删除好友。
+
+# Implementation Plan (请严格按以下步骤生成代码)
+
+## Task 1: Database Update (SQL)
+请生成对应的 MySQL 脚本（DDL）：
+1.  **修改 `users` 表**：
+    * 新增字段 `account_id` (varchar 30)，唯一索引，备注“用户自定义帐号ID”。
+2.  **新建 `friend_request` 表**：
+    * 字段：`id`, `sender_id`, `receiver_id`, `status` (0:待处理, 1:已同意, 2:已拒绝), `create_time`。
+3.  **新建 `friendship` 表**：
+    * 字段：`id`, `user_id` (当前用户), `friend_id` (朋友ID), `create_time`。
+    * *设计说明*：为了查询方便，当两人成为好友时，请插入两条记录（A->B 和 B->A）。
+
+## Task 2: Backend Implementation (Java)
+
+### 2.1 Entity & Mapper
+* 修改 `User.java`：增加 `accountId` 字段。
+* 新建 `FriendRequest.java` 和 `Friendship.java` 实体类。
+* 修改 `UserMapper.xml`：
+    * 更新 `insert` 和 `update` 语句。
+    * 新增 `selectByAccountId` 方法（用于搜索好友）。
+* 新建 `FriendMapper.xml` (及接口)：
+    * 实现好友请求的插入、状态更新、列表查询。
+    * 实现好友关系的插入（双向）、删除（双向）、列表查询。
+
+### 2.2 Service Layer
+* **修改 `UserService` / `UserServiceImpl`**：
+    * 新增 `updateProfile(User user)`：
+        * 允许修改：`phone`, `email`, `account_id`。
+        * **禁止修改**：`real_name`, `id_card` (若前端传来则忽略或报错)。
+        * **校验**：`account_id` 必须唯一，且格式为“6-20位字母数字组合”；如果用户已有 `account_id`，再次修改需根据业务逻辑判断（通常允许改或是只允许设置一次，这里设定为：**如果为空才允许设置，一旦设置不可更改**）。
+* **新建 `FriendService` / `FriendServiceImpl`**：
+    * `sendRequest(Long currentUserId, String targetAccountId)`: 检查用户是否存在、是否已经是好友、是否重复发送。
+    * `handleRequest(Long requestId, Integer status)`: 如果同意，在 `friendship` 表插入两条记录。
+    * `listFriends(Long userId)`: 返回好友列表（需包含好友的 `username`, `account_id`, `avatar` 等信息）。
+    * `deleteFriend(Long userId, Long friendId)`: 删除双向关系。
+
+### 2.3 Controller Layer
+* **`UserController`**: 新增 `/api/user/update`。
+* **`FriendController`**:
+    * `GET /api/friend/search?accountId=xxx`
+    * `POST /api/friend/request/send`
+    * `POST /api/friend/request/handle`
+    * `GET /api/friend/list`
+    * `GET /api/friend/requests/pending` (查看待处理的请求)
+    * `POST /api/friend/delete`
+
+## Task 3: Frontend Implementation (HTML/JS)
+1.  **新建 `center.html` (个人中心)**：
+    * 左侧/顶部导航：个人资料、我的好友、好友请求。
+    * **个人资料区**：展示当前信息。输入框显示 `account_id`，如果已有值则 `readonly`，否则可输入。手机邮箱可编辑。底部有“保存修改”按钮。
+    * **我的好友区**：展示好友列表卡片，每个卡片有一个红色的“删除好友”按钮。顶部有一个“搜索添加好友”的输入框和按钮。
+    * **好友请求区**：展示收到的好友申请，有“同意”和“拒绝”两个按钮。
+2.  **JS 逻辑**：
+    * 页面加载时调用 `/api/user/info` (复用或新增) 回显数据。
+    * 点击保存时校验 `account_id` 正则。
+    * 好友操作全部通过 AJAX 调用后端接口，成功后刷新局部列表。
+
+# Constraints
+* 保持现有的 CSS 风格（蓝紫色背景、半透明卡片）。
+* 后端接口必须返回 `Result` 格式。
+* **SQL 脚本请单独列出**，方便我在数据库执行。
+* 代码中请做好必要的注释。
+
+请直接生成完整的代码。

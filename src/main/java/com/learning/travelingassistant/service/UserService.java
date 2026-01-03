@@ -7,4 +7,8 @@ public interface UserService {
     User login(String username, String password);
     
     void register(User user);
+    
+    User getUserInfo(Long userId);
+    
+    void updateProfile(User user);
 }

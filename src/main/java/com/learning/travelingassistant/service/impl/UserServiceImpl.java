@@ -56,6 +56,47 @@ public class UserServiceImpl implements UserService {
         userMapper.insert(user);
     }
 
+    @Override
+    public User getUserInfo(Long userId) {
+        return userMapper.findById(userId);
+    }
+
+    @Override
+    public void updateProfile(User user) {
+        if (user.getId() == null) {
+            throw new IllegalArgumentException("用户ID不能为空");
+        }
+
+        User existingUser = userMapper.findById(user.getId());
+        if (existingUser == null) {
+            throw new IllegalArgumentException("用户不存在");
+        }
+
+        if (user.getAccountId() != null && !user.getAccountId().trim().isEmpty()) {
+            if (!user.getAccountId().matches("^[a-zA-Z0-9]{6,20}$")) {
+                throw new IllegalArgumentException("帐号ID格式不正确，应为6-20位字母数字组合");
+            }
+
+            if (existingUser.getAccountId() != null && !existingUser.getAccountId().isEmpty()) {
+                throw new IllegalArgumentException("帐号ID已设置，不可修改");
+            }
+
+            User accountIdUser = userMapper.findByAccountId(user.getAccountId());
+            if (accountIdUser != null && !accountIdUser.getId().equals(user.getId())) {
+                throw new IllegalArgumentException("该帐号ID已被使用");
+            }
+        }
+
+        if (user.getPhone() != null && !user.getPhone().trim().isEmpty()) {
+            User phoneUser = userMapper.findByPhone(user.getPhone());
+            if (phoneUser != null && !phoneUser.getId().equals(user.getId())) {
+                throw new IllegalArgumentException("该手机号已被使用");
+            }
+        }
+
+        userMapper.updateProfile(user);
+    }
+
     private String md5(String input) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");

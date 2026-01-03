@@ -15,5 +15,11 @@ public interface UserMapper {
     
     User findByIdCard(@Param("idCard") String idCard);
     
+    User findByAccountId(@Param("accountId") String accountId);
+    
+    User findById(@Param("id") Long id);
+    
     void insert(User user);
+    
+    void updateProfile(User user);
 }

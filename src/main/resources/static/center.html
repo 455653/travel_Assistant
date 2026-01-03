@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - 中国旅游助手</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+        }
+
+        .header .user-info {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .nav-tab {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 12px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .content-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group input:read-only {
+            background: #f5f5f5;
+            cursor: not-allowed;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .friend-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .friend-info h3 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .friend-info p {
+            color: #666;
+            font-size: 14px;
+            margin: 3px 0;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        .request-card {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ffeaa7;
+        }
+
+        .request-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .request-card p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .request-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗺️ 个人中心</h1>
+            <div class="user-info">
+                <span id="headerUsername">加载中...</span>
+                <a href="home.html" class="back-link" style="margin-left: 20px;">返回首页</a>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <div class="nav-tab active" data-tab="profile">个人资料</div>
+            <div class="nav-tab" data-tab="friends">我的好友</div>
+            <div class="nav-tab" data-tab="requests">好友请求</div>
+        </div>
+
+        <!-- 个人资料 -->
+        <div class="content-section active" id="profile">
+            <h2 style="margin-bottom: 20px;">个人资料</h2>
+            <div id="profileMessage" class="message"></div>
+
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" id="username" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>帐号ID（6-20位字母数字，设置后不可修改）</label>
+                <input type="text" id="accountId" placeholder="请设置您的帐号ID，用于好友搜索">
+            </div>
+
+            <div class="form-group">
+                <label>真实姓名（不可修改）</label>
+                <input type="text" id="realName" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>身份证号（不可修改）</label>
+                <input type="text" id="idCard" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>手机号</label>
+                <input type="text" id="phone" placeholder="请输入手机号">
+            </div>
+
+            <div class="form-group">
+                <label>邮箱</label>
+                <input type="email" id="email" placeholder="请输入邮箱">
+            </div>
+
+            <button class="btn btn-primary" onclick="updateProfile()">保存修改</button>
+        </div>
+
+        <!-- 我的好友 -->
+        <div class="content-section" id="friends">
+            <h2 style="margin-bottom: 20px;">我的好友</h2>
+            <div id="friendsMessage" class="message"></div>
+
+            <div class="search-box">
+                <input type="text" id="searchAccountId" placeholder="输入帐号ID搜索用户">
+                <button class="btn btn-primary" onclick="searchAndAddFriend()">搜索并添加</button>
+            </div>
+
+            <div id="friendsList"></div>
+        </div>
+
+        <!-- 好友请求 -->
+        <div class="content-section" id="requests">
+            <h2 style="margin-bottom: 20px;">待处理的好友请求</h2>
+            <div id="requestsMessage" class="message"></div>
+            <div id="requestsList"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        $(document).ready(function() {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                alert('请先登录');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            currentUser = JSON.parse(userStr);
+            $('#headerUsername').text(currentUser.username);
+
+            loadUserProfile();
+            loadFriendsList();
+            loadPendingRequests();
+
+            $('.nav-tab').click(function() {
+                const tab = $(this).data('tab');
+                $('.nav-tab').removeClass('active');
+                $(this).addClass('active');
+                $('.content-section').removeClass('active');
+                $('#' + tab).addClass('active');
+
+                if (tab === 'friends') {
+                    loadFriendsList();
+                } else if (tab === 'requests') {
+                    loadPendingRequests();
+                }
+            });
+        });
+
+        function showMessage(sectionId, message, type) {
+            const $msg = $('#' + sectionId + 'Message');
+            $msg.removeClass('success error').addClass(type).text(message).fadeIn();
+            setTimeout(() => $msg.fadeOut(), 3000);
+        }
+
+        function loadUserProfile() {
+            $.ajax({
+                url: '/api/user/info',
+                method: 'GET',
+                data: { userId: currentUser.id },
+                success: function(response) {
+                    if (response.code === 200) {
+                        const user = response.data;
+                        $('#username').val(user.username);
+                        $('#accountId').val(user.accountId || '');
+                        $('#realName').val(user.realName || '');
+                        $('#idCard').val(user.idCard || '');
+                        $('#phone').val(user.phone || '');
+                        $('#email').val(user.email || '');
+
+                        if (user.accountId) {
+                            $('#accountId').attr('readonly', true);
+                        }
+                    }
+                },
+                error: function() {
+                    showMessage('profile', '加载用户信息失败', 'error');
+                }
+            });
+        }
+
+        function updateProfile() {
+            const accountId = $('#accountId').val().trim();
+            const phone = $('#phone').val().trim();
+            const email = $('#email').val().trim();
+
+            if (accountId && !/^[a-zA-Z0-9]{6,20}$/.test(accountId)) {
+                showMessage('profile', '帐号ID格式不正确，应为6-20位字母数字组合', 'error');
+                return;
+            }
+
+            if (phone && !/^1[3-9]\d{9}$/.test(phone)) {
+                showMessage('profile', '手机号格式不正确', 'error');
+                return;
+            }
+
+            if (email && !/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/.test(email)) {
+                showMessage('profile', '邮箱格式不正确', 'error');
+                return;
+            }
+
+            $.ajax({
+                url: '/api/user/update',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    id: currentUser.id,
+                    accountId: accountId || null,
+                    phone: phone || null,
+                    email: email || null
+                }),
+                success: function(response) {
+                    if (response.code === 200) {
+                        showMessage('profile', '更新成功', 'success');
+                        if (accountId) {
+                            $('#accountId').attr('readonly', true);
+                        }
+                        loadUserProfile();
+                    } else {
+                        showMessage('profile', response.msg, 'error');
+                    }
+                },
+                error: function() {
+                    showMessage('profile', '更新失败，请稍后重试', 'error');
+                }
+            });
+        }
+
+        function loadFriendsList() {
+            $.ajax({
+                url: '/api/friend/list',
+                method: 'GET',
+                data: { userId: currentUser.id },
+                success: function(response) {
+                    if (response.code === 200) {
+                        const friends = response.data;
+                        if (friends.length === 0) {
+                            $('#friendsList').html(`
+                                <div class="empty-state">
+                                    <p>暂无好友</p>
+                                    <p style="font-size: 14px; margin-top: 10px;">通过上方搜索框添加好友吧！</p>
+                                </div>
+                            `);
+                        } else {
+                            let html = '';
+                            friends.forEach(friend => {
+                                html += `
+                                    <div class="friend-card">
+                                        <div class="friend-info">
+                                            <h3>${friend.friendUsername}</h3>
+                                            <p>帐号ID: ${friend.friendAccountId || '未设置'}</p>
+                                            <p>手机: ${friend.friendPhone || '未公开'}</p>
+                                            <p>邮箱: ${friend.friendEmail || '未公开'}</p>
+                                        </div>
+                                        <button class="btn btn-danger" onclick="deleteFriend(${friend.friendId}, '${friend.friendUsername}')">删除好友</button>
+                                    </div>
+                                `;
+                            });
+                            $('#friendsList').html(html);
+                        }
+                    }
+                },
+                error: function() {
+                    showMessage('friends', '加载好友列表失败', 'error');
+                }
+            });
+        }
+
+        function searchAndAddFriend() {
+            const accountId = $('#searchAccountId').val().trim();
+            if (!accountId) {
+                showMessage('friends', '请输入要搜索的帐号ID', 'error');
+                return;
+            }
+
+            $.ajax({
+                url: '/api/friend/search',
+                method: 'GET',
+                data: { accountId: accountId },
+                success: function(response) {
+                    if (response.code === 200) {
+                        const user = response.data;
+                        if (confirm(`找到用户：${user.username} (${user.accountId})\n是否发送好友请求？`)) {
+                            sendFriendRequest(accountId);
+                        }
+                    } else {
+                        showMessage('friends', response.msg, 'error');
+                    }
+                },
+                error: function() {
+                    showMessage('friends', '搜索失败', 'error');
+                }
+            });
+        }
+
+        function sendFriendRequest(targetAccountId) {
+            $.ajax({
+                url: '/api/friend/request/send',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    senderId: currentUser.id,
+                    targetAccountId: targetAccountId
+                }),
+                success: function(response) {
+                    if (response.code === 200) {
+                        showMessage('friends', '好友请求已发送', 'success');
+                        $('#searchAccountId').val('');
+                    } else {
+                        showMessage('friends', response.msg, 'error');
+                    }
+                },
+                error: function() {
+                    showMessage('friends', '发送请求失败', 'error');
+                }
+            });
+        }
+
+        function deleteFriend(friendId, friendName) {
+            if (!confirm(`确定要删除好友 ${friendName} 吗？`)) {
+                return;
+            }
+
+            $.ajax({
+                url: '/api/friend/delete',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    userId: currentUser.id,
+                    friendId: friendId
+                }),
+                success: function(response) {
+                    if (response.code === 200) {
+                        showMessage('friends', '已删除好友', 'success');
+                        loadFriendsList();
+                    } else {
+                        showMessage('friends', response.msg, 'error');
+                    }
+                },
+                error: function() {
+                    showMessage('friends', '删除失败', 'error');
+                }
+            });
+        }
+
+        function loadPendingRequests() {
+            $.ajax({
+                url: '/api/friend/requests/pending',
+                method: 'GET',
+                data: { userId: currentUser.id },
+                success: function(response) {
+                    if (response.code === 200) {
+                        const requests = response.data;
+                        if (requests.length === 0) {
+                            $('#requestsList').html(`
+                                <div class="empty-state">
+                                    <p>暂无待处理的好友请求</p>
+                                </div>
+                            `);
+                        } else {
+                            let html = '';
+                            requests.forEach(req => {
+                                html += `
+                                    <div class="request-card">
+                                        <h3>${req.senderUsername}</h3>
+                                        <p>帐号ID: ${req.senderAccountId || '未设置'}</p>
+                                        <p style="font-size: 12px; color: #999;">请求时间: ${new Date(req.createTime).toLocaleString()}</p>
+                                        <div class="request-actions">
+                                            <button class="btn btn-success" onclick="handleRequest(${req.id}, 1)">同意</button>
+                                            <button class="btn btn-danger" onclick="handleRequest(${req.id}, 2)">拒绝</button>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            $('#requestsList').html(html);
+                        }
+                    }
+                },
+                error: function() {
+                    showMessage('requests', '加载好友请求失败', 'error');
+                }
+            });
+        }
+
+        function handleRequest(requestId, status) {
+            $.ajax({
+                url: '/api/friend/request/handle',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    requestId: requestId,
+                    status: status
+                }),
+                success: function(response) {
+                    if (response.code === 200) {
+                        showMessage('requests', response.msg, 'success');
+                        loadPendingRequests();
+                        if (status === 1) {
+                            loadFriendsList();
+                        }
+                    } else {
+                        showMessage('requests', response.msg, 'error');
+                    }
+                },
+                error: function() {
+                    showMessage('requests', '处理请求失败', 'error');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

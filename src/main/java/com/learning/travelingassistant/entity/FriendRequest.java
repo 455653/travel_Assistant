@@ -9,15 +9,14 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class FriendRequest {
     private Long id;
-    private String username;
-    private String accountId;
-    private String password;
-    private String realName;
-    private String idCard;
-    private String phone;
-    private String email;
+    private Long senderId;
+    private Long receiverId;
+    private Integer status;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
+
+    private String senderUsername;
+    private String senderAccountId;
 }
