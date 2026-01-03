@@ -19,9 +19,8 @@ spring:
   # SQL初始化配置
   sql:
     init:
-      mode: never # 可选值: always, embedded, never
+      mode: never
       schema-locations: classpath:schema.sql
-      data-locations: classpath:data.sql
       encoding: utf-8
       continue-on-error: false
 

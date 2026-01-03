@@ -6,6 +6,9 @@ import com.learning.travelingassistant.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -14,6 +17,25 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User login(String username, String password) {
-        return userMapper.findByUsernameAndPassword(username, password);
+        String encryptedPassword = md5(password);
+        return userMapper.findByUsernameAndPassword(username, encryptedPassword);
+    }
+
+    private String md5(String input) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] messageDigest = md.digest(input.getBytes());
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : messageDigest) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("MD5加密失败", e);
+        }
     }
 }
