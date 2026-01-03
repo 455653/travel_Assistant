@@ -7,13 +7,13 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface UserMapper {
     
-    /**
-     * 根据用户名和密码查询用户
-     */
     User findByUsernameAndPassword(@Param("username") String username, @Param("password") String password);
     
-    /**
-     * 根据用户名查询用户
-     */
     User findByUsername(@Param("username") String username);
+    
+    User findByPhone(@Param("phone") String phone);
+    
+    User findByIdCard(@Param("idCard") String idCard);
+    
+    void insert(User user);
 }

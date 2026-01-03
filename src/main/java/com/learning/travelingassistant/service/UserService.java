@@ -4,8 +4,7 @@ import com.learning.travelingassistant.entity.User;
 
 public interface UserService {
     
-    /**
-     * 用户登录
-     */
     User login(String username, String password);
+    
+    void register(User user);
 }

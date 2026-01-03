@@ -16,16 +16,11 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    /**
-     * 用户登录
-     * POST /api/user/login
-     */
     @PostMapping("/login")
     public Result<Map<String, Object>> login(@RequestBody Map<String, String> loginData) {
         String username = loginData.get("username");
         String password = loginData.get("password");
 
-        // 参数校验
         if (username == null || username.trim().isEmpty()) {
             return Result.error("用户名不能为空");
         }
@@ -33,19 +28,29 @@ public class UserController {
             return Result.error("密码不能为空");
         }
 
-        // 调用服务层登录
         User user = userService.login(username, password);
 
         if (user == null) {
             return Result.error("用户名或密码错误");
         }
 
-        // 登录成功，返回用户信息（不包含密码）
         Map<String, Object> data = new HashMap<>();
         data.put("id", user.getId());
         data.put("username", user.getUsername());
         data.put("createTime", user.getCreateTime());
 
         return Result.success(data);
+    }
+
+    @PostMapping("/register")
+    public Result<String> register(@RequestBody User user) {
+        try {
+            userService.register(user);
+            return Result.success("注册成功");
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("注册失败，请稍后重试");
+        }
     }
 }

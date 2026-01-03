@@ -21,6 +21,41 @@ public class UserServiceImpl implements UserService {
         return userMapper.findByUsernameAndPassword(username, encryptedPassword);
     }
 
+    @Override
+    public void register(User user) {
+        if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+            throw new IllegalArgumentException("用户名不能为空");
+        }
+        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+            throw new IllegalArgumentException("密码不能为空");
+        }
+        if (user.getPhone() == null || user.getPhone().trim().isEmpty()) {
+            throw new IllegalArgumentException("手机号不能为空");
+        }
+
+        User existingUser = userMapper.findByUsername(user.getUsername());
+        if (existingUser != null) {
+            throw new IllegalArgumentException("用户名已存在");
+        }
+
+        User existingPhone = userMapper.findByPhone(user.getPhone());
+        if (existingPhone != null) {
+            throw new IllegalArgumentException("手机号已被注册");
+        }
+
+        if (user.getIdCard() != null && !user.getIdCard().trim().isEmpty()) {
+            User existingIdCard = userMapper.findByIdCard(user.getIdCard());
+            if (existingIdCard != null) {
+                throw new IllegalArgumentException("身份证号已被注册");
+            }
+        }
+
+        String encryptedPassword = md5(user.getPassword());
+        user.setPassword(encryptedPassword);
+
+        userMapper.insert(user);
+    }
+
     private String md5(String input) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");

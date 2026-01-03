@@ -1,0 +1,60 @@
+# Role
+你是一名资深 Java Spring Boot 全栈开发工程师。
+我正在开发一个“中国旅游助手”项目（Spring Boot 3 + MyBatis + MySQL + jQuery）。
+目前项目已经有登录功能，现在需要**新增用户注册功能**，且要求包含实名认证信息。
+
+# Context (现有架构)
+1.  **数据库**：已有 `users` 表，目前字段只有 `id`, `username`, `password`, `create_time`, `update_time`。
+2.  **后端**：已有 `UserController`, `UserService`, `UserMapper`，目前仅实现了登录逻辑。
+3.  **加密方式**：项目中使用 MD5 对密码进行加密（参考 `UserServiceImpl` 中的实现）。
+
+# Goal
+请在**不修改任何现有功能代码**（特别是登录逻辑）的前提下，实现用户注册功能。
+注册时用户需要填写：用户名、密码、**真实姓名**、**身份证号**、**手机号**、**邮箱**。
+
+# Implementation Plan (请按以下步骤生成代码)
+
+## Task 1: Database Update (SQL)
+请生成修改 `users` 表的 SQL 语句 (`ALTER TABLE`)：
+* 新增 `real_name` (varchar 50, 真实姓名)
+* 新增 `id_card` (varchar 20, 身份证号, 唯一索引)
+* 新增 `phone` (varchar 20, 手机号, 唯一索引)
+* 新增 `email` (varchar 100, 邮箱)
+* 请确保字符集为 `utf8mb4`。
+
+## Task 2: Backend Implementation (Java)
+1.  **Entity (`User.java`)**:
+    * 在现有 `User` 类中添加上述 4 个新字段，并补充 Getter/Setter (或 Lombok 注解)。
+2.  **Mapper (`UserMapper.xml`)**:
+    * 新增 `<insert id="insert">` 语句，用于插入完整用户信息。
+    * 新增 `<select id="findByUsername">` (如果已有则忽略) 用于检查用户名是否存在。
+    * (可选) 如果需要，增加根据手机号查询的方法以防止重复注册。
+3.  **Service (`UserServiceImpl.java`)**:
+    * 在 `UserService` 接口中定义 `register(User user)` 方法。
+    * 在 `UserServiceImpl` 中实现该方法：
+        * **校验**：检查用户名、手机号是否已存在。
+        * **加密**：使用现有的 MD5 逻辑对用户输入的明文密码进行加密，然后再存入数据库。
+        * **入库**：调用 Mapper 插入数据。
+4.  **Controller (`UserController.java`)**:
+    * 新增 `POST /api/user/register` 接口。
+    * 接收 JSON 参数。
+    * 返回统一的 `Result` 对象。
+
+## Task 3: Frontend Implementation (HTML/JS)
+1.  **新建页面 (`register.html`)**:
+    * 请参照 `login.html` 的 UI 风格（蓝紫色渐变背景、居中卡片），创建一个美观的注册页面。
+    * 包含表单：用户名、密码、确认密码、姓名、身份证、手机号、邮箱。
+    * 底部增加“已有账号？去登录”的链接指向 `login.html`。
+2.  **JS 逻辑 (jQuery)**:
+    * **表单验证**：
+        * 密码和确认密码是否一致。
+        * 手机号格式验证 (正则)。
+        * 身份证号简单格式验证 (正则)。
+    * **提交**：使用 `$.ajax` 发送 JSON 数据到后端注册接口。
+    * **反馈**：注册成功后提示用户并跳转到 `login.html`；失败则显示错误信息。
+
+# Constraints
+* **严禁修改**现有的 `login` 方法和逻辑。
+* 保持代码风格一致（Controller 返回 `Result<T>`）。
+* 不需要复杂的身份证后台联网校验，只需前端正则校验 + 数据库存储即可。
+* 请直接给出完整的代码块（SQL, Java, HTML），并标注文件名。
