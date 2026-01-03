@@ -1,0 +1,63 @@
+# Role
+你是一名资深 Java Spring Boot 全栈开发工程师。
+我正在开发一个“中国旅游助手”项目（Spring Boot 3 + MyBatis + MySQL + jQuery）。
+目前项目的基础架构和数据库已经定型，我需要完善**“热门景点 (Hot Attractions)”**展示功能。
+
+# Context (现有资源)
+1.  **数据库**：
+    * `attraction` 表包含：`id`, `name`, `image_url`, `view_count` (浏览量), `rating` (评分 0.0-5.0)。
+2.  **后端架构**：
+    * Controller: `AttractionController.java`
+    * Service: `AttractionService.java` / `AttractionServiceImpl.java`
+    * Mapper: `AttractionMapper.java` / `AttractionMapper.xml`
+    * 统一返回结果类: `Result.java`
+3.  **前端页面**：
+    * `hot.html`: 目前可能是一个静态模版或空页面。
+    * `detail.html`: 景点详情页（已存在，接收 `id` 参数）。
+
+# Goal
+请在**不修改项目现有核心逻辑**的前提下，实现“热门景点”页面的完整功能。
+功能点包括：
+1.  **热门算法**：从数据库筛选出最热门的 **9个** 景点。
+2.  **前端展示**：在 `hot.html` 动态渲染这 9 个景点卡片。
+3.  **交互跳转**：点击卡片跳转详情页，增加返回首页按钮。
+
+# Implementation Plan (请严格按此步骤生成代码)
+
+## Task 1: Backend Implementation (Java & SQL)
+请修改后端代码以提供热门景点数据。
+
+1.  **Mapper 层 (`AttractionMapper.xml`)**:
+    * 新增一个查询 `<select id="selectHotAttractions">`。
+    * **排序算法 (Weighted Sort)**：请使用 SQL 的 `ORDER BY` 语句计算热度权重。
+    * *推荐公式*：`ORDER BY (view_count * 0.7 + rating * 50 * 0.3) DESC`。
+    * (说明：rating 满分5.0，乘以50变为250分制，避免浏览量(view_count)过大导致评分权重被忽略)。
+    * 限制返回前 **9** 条数据 (`LIMIT 9`)。
+2.  **Service 层 (`AttractionService`)**:
+    * 新增方法 `List<Attraction> getHotAttractions();` 并实现它。
+3.  **Controller 层 (`AttractionController`)**:
+    * 新增接口 `GET /api/attraction/hot`。
+    * 返回 `Result<List<Attraction>>`。
+
+## Task 2: Frontend Implementation (`hot.html`)
+请重写或完善 `hot.html` 的代码（HTML + CSS + JS）。
+
+1.  **布局结构**：
+    * **导航栏/头部**：包含一个醒目的“返回首页”按钮（链接到 `index.html`），可以使用简单的绝对定位或者 Flex 布局放在左上角。
+    * **内容区**：使用 Grid 布局（3列 x 3行）或 Flex Wrap 布局，美观地展示 9 个景点卡片。
+2.  **卡片样式**：
+    * 每个卡片应包含：景点封面图 (`image_url`)、景点名称 (`name`)、评分 (`rating`)、浏览量 (`view_count`)。
+    * 图片需设置统一宽高（`object-fit: cover`）以防止变形。
+    * 卡片增加鼠标悬停效果（轻微放大或阴影加深）。
+3.  **JS 逻辑 (jQuery)**：
+    * 页面加载时 (`$(document).ready`) 自动调用 `/api/attraction/hot`。
+    * 遍历返回的数据，生成 HTML 字符串并插入容器。
+    * **点击事件**：为每个卡片绑定点击事件，跳转至 `detail.html?id={id}`。
+
+# Constraints (约束)
+* **严禁修改**其他的 Controller 或 Mapper 方法（如 `login`, `upload` 等）。
+* 保持代码风格统一，Result 类的使用方式与项目中其他接口一致。
+* HTML 样式请使用内联 CSS 或 `<style>` 标签，确保复制粘贴即可运行，不需要额外的 CSS 文件。
+* **SQL 脚本**：如果 Mapper XML 修改不够清晰，请额外提供对应的 SQL 测试查询语句。
+
+请直接给出修改后的 **Mapper XML 片段**、**Controller 代码片段** 和完整的 **hot.html** 代码。

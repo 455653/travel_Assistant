@@ -28,11 +28,11 @@
         WHERE id = #{id}
     </select>
 
-    <!-- 获取全网热门景点 -->
+    <!-- 获取全网热门景点（使用加权热度算法：浏览量70% + 评分30%） -->
     <select id="findHotAttractions" resultMap="attractionResultMap">
         SELECT id, city_id, name, image_url, description, strategy_guide, view_count, rating, create_time
         FROM attraction
-        ORDER BY view_count DESC
+        ORDER BY (view_count * 0.7 + rating * 50 * 0.3) DESC
         LIMIT #{limit}
     </select>
 
