@@ -182,4 +182,58 @@ public class DeepSeekService {
             return null;
         }
     }
+
+    public String callDeepSeekApi(String systemPrompt, String userPrompt) {
+        try {
+            String requestBody = String.format(
+                "{\"model\":\"deepseek-chat\",\"messages\":[" +
+                "{\"role\":\"system\",\"content\":\"%s\"}," +
+                "{\"role\":\"user\",\"content\":\"%s\"}" +
+                "],\"stream\":false}",
+                escapeJson(systemPrompt),
+                escapeJson(userPrompt)
+            );
+
+            Request request = new Request.Builder()
+                    .url(baseUrl + "/chat/completions")
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("Authorization", "Bearer " + apiKey)
+                    .post(RequestBody.create(requestBody, MediaType.parse("application/json")))
+                    .build();
+
+            logger.info("调用 DeepSeek API");
+
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    logger.error("DeepSeek API 调用失败: HTTP {}", response.code());
+                    return "抱歉，AI 服务暂时不可用，请稍后再试。";
+                }
+
+                String responseBody = response.body().string();
+                logger.info("DeepSeek API 响应成功");
+
+                JsonNode rootNode = objectMapper.readTree(responseBody);
+                JsonNode choices = rootNode.get("choices");
+
+                if (choices != null && choices.isArray() && choices.size() > 0) {
+                    JsonNode message = choices.get(0).get("message");
+                    if (message != null && message.has("content")) {
+                        String content = message.get("content").asText();
+                        logger.info("成功生成内容，长度: {} 字符", content.length());
+                        return content;
+                    }
+                }
+
+                logger.error("DeepSeek API 响应格式异常");
+                return "抱歉，无法生成内容，请重试。";
+            }
+
+        } catch (IOException e) {
+            logger.error("调用 DeepSeek API 异常: {}", e.getMessage(), e);
+            return "网络连接失败，请检查网络后重试。";
+        } catch (Exception e) {
+            logger.error("调用 API 时发生未知错误: {}", e.getMessage(), e);
+            return "系统错误，请稍后再试。";
+        }
+    }
 }

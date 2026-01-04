@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 旅行规划助手 - 中国旅游助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .back-home-btn {
+            position: absolute;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-home-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+        }
+
+        .form-section h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .checkbox-item input {
+            width: auto;
+        }
+
+        .btn-generate {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-generate:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .result-section h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        #planContent {
+            flex: 1;
+            width: 100%;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.8;
+            resize: vertical;
+            min-height: 400px;
+            font-family: 'Microsoft YaHei', monospace;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-save {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #218838;
+        }
+
+        .btn-export {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-export:hover {
+            background: #0056b3;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .tip {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #856404;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .form-section {
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="home.html" class="back-home-btn">
+                ← 返回首页
+            </a>
+            <h1>🌍 AI 旅行规划助手</h1>
+            <p>让智能 AI 为您定制专属旅行攻略</p>
+        </div>
+
+        <div class="main-content">
+            <div class="form-section">
+                <h2>📝 填写旅行信息</h2>
+                <form id="planForm">
+                    <div class="form-group">
+                        <label for="destination">目的地（省份/城市） *</label>
+                        <input type="text" id="destination" placeholder="例如：北京、杭州西湖" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="startDate">开始日期 *</label>
+                        <input type="date" id="startDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="endDate">结束日期 *</label>
+                        <input type="date" id="endDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="peopleCount">出行人数 *</label>
+                        <input type="number" id="peopleCount" min="1" value="2" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="transportType">交通方式</label>
+                        <select id="transportType">
+                            <option value="">请选择</option>
+                            <option value="飞机">飞机</option>
+                            <option value="高铁">高铁</option>
+                            <option value="自驾">自驾</option>
+                            <option value="火车">火车</option>
+                            <option value="大巴">大巴</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="budgetType">人均预算</label>
+                        <select id="budgetType">
+                            <option value="">请选择</option>
+                            <option value="穷游">穷游（1000元以下）</option>
+                            <option value="舒适">舒适（1000-3000元）</option>
+                            <option value="豪华">豪华（3000元以上）</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>旅行偏好（可多选）</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="pref1" value="美食">
+                                <label for="pref1">美食</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="pref2" value="人文">
+                                <label for="pref2">人文</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="pref3" value="风景">
+                                <label for="pref3">风景</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="pref4" value="摄影">
+                                <label for="pref4">摄影</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="pref5" value="休闲">
+                                <label for="pref5">休闲</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-generate" id="generateBtn">
+                        🤖 生成 AI 攻略
+                    </button>
+
+                    <div class="tip">
+                        💡 提示：填写的信息越详细，AI 生成的攻略越精准！
+                    </div>
+                </form>
+            </div>
+
+            <div class="result-section">
+                <h2>📖 攻略内容</h2>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>AI 正在为您生成专属攻略，请稍候...</p>
+                </div>
+                <textarea id="planContent" placeholder="点击左侧【生成 AI 攻略】按钮，开始您的智能旅行规划之旅！&#10;&#10;您也可以在生成后手动编辑内容。"></textarea>
+                <div class="button-group">
+                    <button class="btn btn-save" id="saveBtn" disabled>💾 保存到我的行程</button>
+                    <button class="btn btn-export" id="exportBtn" disabled>📄 导出为 Word</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        let currentPlanId = null;
+        let currentUserId = 1;
+
+        $(document).ready(function() {
+            const today = new Date().toISOString().split('T')[0];
+            $('#startDate').attr('min', today);
+            $('#endDate').attr('min', today);
+
+            $('#startDate').on('change', function() {
+                $('#endDate').attr('min', $(this).val());
+            });
+
+            $('#planForm').on('submit', function(e) {
+                e.preventDefault();
+                generatePlan();
+            });
+
+            $('#saveBtn').on('click', savePlan);
+            $('#exportBtn').on('click', exportPlan);
+        });
+
+        function generatePlan() {
+            const preferences = [];
+            $('input[type="checkbox"]:checked').each(function() {
+                preferences.push($(this).val());
+            });
+
+            const requestData = {
+                destination: $('#destination').val(),
+                startDate: $('#startDate').val(),
+                endDate: $('#endDate').val(),
+                peopleCount: parseInt($('#peopleCount').val()),
+                transportType: $('#transportType').val(),
+                budgetType: $('#budgetType').val(),
+                preferences: preferences.join('、')
+            };
+
+            $('#generateBtn').prop('disabled', true).text('生成中...');
+            $('#loading').addClass('active');
+            $('#planContent').val('');
+            $('#saveBtn, #exportBtn').prop('disabled', true);
+
+            $.ajax({
+                url: '/api/plan/generate',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(requestData),
+                success: function(response) {
+                    if (response.code === 200) {
+                        $('#planContent').val(response.data);
+                        $('#saveBtn').prop('disabled', false);
+                        currentPlanId = null;
+                        alert('✅ AI 攻略生成成功！您可以编辑内容后保存。');
+                    } else {
+                        alert('❌ 生成失败：' + response.msg);
+                    }
+                },
+                error: function(xhr) {
+                    alert('❌ 网络错误，请稍后重试。');
+                    console.error(xhr);
+                },
+                complete: function() {
+                    $('#generateBtn').prop('disabled', false).text('🤖 生成 AI 攻略');
+                    $('#loading').removeClass('active');
+                }
+            });
+        }
+
+        function savePlan() {
+            const content = $('#planContent').val().trim();
+            if (!content) {
+                alert('⚠️ 攻略内容不能为空！');
+                return;
+            }
+
+            const title = $('#destination').val() + '旅行攻略 - ' + $('#startDate').val();
+
+            const saveData = {
+                title: title,
+                destination: $('#destination').val(),
+                startDate: $('#startDate').val(),
+                endDate: $('#endDate').val(),
+                peopleCount: parseInt($('#peopleCount').val()),
+                budgetType: $('#budgetType').val(),
+                content: content
+            };
+
+            $.ajax({
+                url: '/api/plan/save?userId=' + currentUserId,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(saveData),
+                success: function(response) {
+                    if (response.code === 200) {
+                        currentPlanId = response.data;
+                        $('#exportBtn').prop('disabled', false);
+                        alert('✅ 保存成功！您可以导出为 Word 文档。');
+                    } else {
+                        alert('❌ 保存失败：' + response.msg);
+                    }
+                },
+                error: function(xhr) {
+                    alert('❌ 保存失败，请稍后重试。');
+                    console.error(xhr);
+                }
+            });
+        }
+
+        function exportPlan() {
+            if (!currentPlanId) {
+                alert('⚠️ 请先保存攻略再导出！');
+                return;
+            }
+
+            window.location.href = '/api/plan/export?id=' + currentPlanId;
+            alert('📥 正在下载 Word 文档...');
+        }
+    </script>
+</body>
+</html>

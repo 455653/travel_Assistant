@@ -1,0 +1,70 @@
+# Role
+你是一名资深 Java Spring Boot 全栈开发工程师。
+我正在开发“中国旅游助手”项目，目前已具备用户、足迹、账本等功能。
+现有项目结构中已包含 `DeepSeekService` (AI服务) 和 `ExportService` (导出服务)。
+
+# Goal
+请在现有项目中新增**“AI 旅行规划助手 (AI Travel Planner)”**功能。
+该功能允许用户输入旅行条件，调用 DeepSeek 生成详细攻略，并支持在线编辑、保存到数据库以及**导出为 Word 文档**。
+
+# Implementation Plan (请严格按此步骤生成代码)
+
+## Task 1: Dependency & Database (配置与数据库)
+1.  **Maven 依赖**: 检查并提供 `pom.xml` 中需要的 **Apache POI** 依赖代码（用于导出 Word），如果项目中未包含请给出。
+2.  **Database Update (SQL)**:
+    * 生成创建 `travel_plan` 表的 SQL 脚本。
+    * 字段要求：`id`, `user_id` (关联用户), `title` (例如"2026北京三日游"), `destination` (目的地), `start_date`, `end_date`, `people_count` (人数), `budget_type` (预算类型), `content` (攻略详情, TEXT/LONGTEXT), `create_time`.
+    * 设置外键关联 `users` 表。
+
+## Task 2: Backend Implementation (Java)
+
+### 2.1 Entity & Mapper
+* 创建 `TravelPlan` 实体类。
+* 创建 `TravelPlanMapper` (XML)：
+    * `insert`: 保存攻略。
+    * `updateContent`: 更新攻略内容。
+    * `selectByUserId`: 查询某用户的所有历史规划。
+    * `selectById`: 查询单条详情。
+
+### 2.2 Service Layer Logic
+1.  **`AiPlanningService` (新增)**:
+    * 方法 `generatePlan(PlanRequestDTO request)`:
+    * **Prompt 构造逻辑**：请拼接用户的输入（目的地、时间、人数、交通、预算偏好等），构造一个高质量的 Prompt 发送给 `DeepSeekService`。
+    * **Prompt 要求**：告诉 AI "请作为专业导游，生成一份详细的{Destination}旅行攻略，包含每日行程安排、交通建议、必打卡景点和美食推荐。格式清晰，使用 Markdown 分点叙述"。
+2.  **`TravelPlanService` (新增)**:
+    * `savePlan`: 将 AI 生成的内容或用户修改后的内容存入数据库。
+    * `updatePlan`: 用户编辑后更新数据库。
+    * `getUserPlans`: 获取历史列表。
+3.  **修改 `ExportService`**:
+    * 新增方法 `exportPlanToWord(String title, String content, HttpServletResponse response)`。
+    * 使用 Apache POI (`XWPFDocument`) 创建 Word 文档。
+    * 将 `title` 设为大标题，将 `content` 写入正文（注意处理换行符，如果可能，简单的 Markdown 符号如 `#` 转为加粗或标题更好，若太复杂则直接按文本写入）。
+
+### 2.3 Controller Layer (`TravelPlanController`)
+* `POST /api/plan/generate`: 接收表单参数，调用 AI，返回生成的文本串。
+* `POST /api/plan/save`: 接收 JSON (title, content, dates...)，保存到数据库。
+* `GET /api/plan/list`: 获取当前用户的列表。
+* `GET /api/plan/export?id=xx`: 根据 ID 查出内容并调用 ExportService 导出 Word。
+
+## Task 3: Frontend Implementation (HTML/JS)
+请新建页面 `plan_generator.html`，包含三个主要区域：
+
+1.  **输入表单区**：
+    * 输入项：是否跨省(文本框输入省份/城市)、开始/结束日期、人数、交通方式(下拉框)、人均预算(下拉框：穷游/舒适/豪华)、旅行偏好(复选框：美食/人文/风景)。
+    * 按钮：“生成攻略 (AI)” (点击后显示 Loading 动画)。
+2.  **攻略编辑与展示区**：
+    * 一个大的 `<textarea>` 或可编辑 `<div>`，用于显示 AI 生成的结果。
+    * 用户可以直接在里面修改文字。
+    * 底部按钮组：“保存到我的行程”、“导出为 Word”。
+3.  **JS 逻辑 (jQuery)**：
+    * **生成**：AJAX 调用 `/generate`，成功后将返回的文本填入文本域。
+    * **保存**：AJAX 调用 `/save`，保存成功提示用户。
+    * **导出**：`window.location.href = '/api/plan/export?id=' + currentPlanId` (需确保先保存再导出，或者直接传内容导出)。
+
+# Constraints
+* **严禁修改**现有的 `UserMapper`, `Login` 等核心逻辑。
+* 复用项目中已有的 `Result` 返回类。
+* `DeepSeekService` 的调用方式请参考项目中已有的实现。
+* 确保 Word 导出功能处理好中文乱码问题（设置正确的 Header）。
+
+请为我生成完整、详细的代码实现，包括 Maven 依赖、SQL、Java 类和 HTML/JS。

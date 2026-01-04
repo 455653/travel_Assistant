@@ -39,6 +39,10 @@ public class ExportService {
         }
     }
 
+    public byte[] exportPlanToWord(String title, String content) throws IOException {
+        return exportGuideToWord(title, content);
+    }
+
     private void addTitle(XWPFDocument document, String title) {
         XWPFParagraph titleParagraph = document.createParagraph();
         titleParagraph.setAlignment(ParagraphAlignment.CENTER);

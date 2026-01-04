@@ -170,6 +170,38 @@ create table travel_footprint
 )
     comment '旅行足迹相册表' charset = utf8mb4;
 
+create table expense_record
+(
+    id           bigint auto_increment comment '记录ID'
+        primary key,
+    footprint_id bigint                              not null comment '所属足迹相册ID',
+    payer_id     bigint                              not null comment '支付人用户ID',
+    category     varchar(50)                         not null comment '消费分类',
+    amount       decimal(10, 2)                      not null comment '金额',
+    expense_date date                                not null comment '消费日期',
+    description  varchar(255)                        null comment '备注描述',
+    create_time  timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    constraint expense_record_ibfk_1
+        foreign key (footprint_id) references travel_footprint (id)
+            on delete cascade,
+    constraint expense_record_ibfk_2
+        foreign key (payer_id) references users (id)
+            on delete cascade
+)
+    comment '旅行记账表' charset = utf8mb4;
+
+create index idx_category
+    on expense_record (category);
+
+create index idx_expense_date
+    on expense_record (expense_date);
+
+create index idx_footprint
+    on expense_record (footprint_id);
+
+create index idx_payer
+    on expense_record (payer_id);
+
 create table footprint_collaborator
 (
     id           bigint auto_increment comment '协作ID'
@@ -249,3 +281,29 @@ create index idx_province
 create index idx_username
     on users (username);
 
+-- 旅行规划表 (添加到 database.sql 中)
+create table travel_plan
+(
+    id          bigint auto_increment comment '规划ID'
+        primary key,
+    user_id     bigint                              not null comment '创建者用户ID',
+    title       varchar(200)                        not null comment '规划标题',
+    destination varchar(100)                        not null comment '目的地',
+    start_date  date                                not null comment '开始日期',
+    end_date    date                                not null comment '结束日期',
+    people_count int                                null comment '出行人数',
+    budget_type varchar(50)                         null comment '预算类型(穷游/舒适/豪华)',
+    content     longtext                            not null comment '攻略详细内容(Markdown)',
+    create_time timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    update_time timestamp default CURRENT_TIMESTAMP null on update CURRENT_TIMESTAMP comment '更新时间',
+    constraint travel_plan_ibfk_1
+        foreign key (user_id) references users (id)
+            on delete cascade
+)
+    comment '旅行规划表' charset = utf8mb4;
+
+create index idx_user_id
+    on travel_plan (user_id);
+
+create index idx_create_time
+    on travel_plan (create_time);

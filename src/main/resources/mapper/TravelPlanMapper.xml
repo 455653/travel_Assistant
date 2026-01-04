@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.travelingassistant.mapper.TravelPlanMapper">
+
+    <resultMap id="TravelPlanResultMap" type="com.learning.travelingassistant.entity.TravelPlan">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="title" column="title"/>
+        <result property="destination" column="destination"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="peopleCount" column="people_count"/>
+        <result property="budgetType" column="budget_type"/>
+        <result property="content" column="content"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO travel_plan (user_id, title, destination, start_date, end_date,
+                                people_count, budget_type, content)
+        VALUES (#{userId}, #{title}, #{destination}, #{startDate}, #{endDate},
+                #{peopleCount}, #{budgetType}, #{content})
+    </insert>
+
+    <update id="updateContent">
+        UPDATE travel_plan
+        SET content = #{content},
+            title = #{title}
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectByUserId" resultMap="TravelPlanResultMap">
+        SELECT * FROM travel_plan
+        WHERE user_id = #{userId}
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectById" resultMap="TravelPlanResultMap">
+        SELECT * FROM travel_plan
+        WHERE id = #{id}
+    </select>
+
+</mapper>

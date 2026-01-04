@@ -103,7 +103,7 @@
         /* 导航卡片容器 */
         .nav-cards {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 40px;
             max-width: 1400px;
             margin: 0 auto;
@@ -185,6 +185,16 @@
 
         .nav-card:nth-child(4) h2,
         .nav-card:nth-child(4) p {
+            color: white;
+        }
+
+        .nav-card:nth-child(5) {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-card:nth-child(5) h2,
+        .nav-card:nth-child(5) p {
             color: white;
         }
 
@@ -313,6 +323,12 @@
                 <h2>旅行账本</h2>
                 <p>智能记账助手，AI识别消费，清晰管理旅行支出</p>
             </div>
+
+            <div class="nav-card" onclick="goToAiPlanner()">
+                <div class="nav-card-icon">🤖</div>
+                <h2>AI 旅行规划</h2>
+                <p>智能 AI 助手为您定制专属旅行攻略，一键生成详细行程</p>
+            </div>
         </div>
     </section>
 
@@ -353,6 +369,11 @@
         // 跳转到旅行账本页
         function goToLedger() {
             window.location.href = 'ledger_list.html';
+        }
+
+        // 跳转到 AI 旅行规划页
+        function goToAiPlanner() {
+            window.location.href = 'plan_generator.html';
         }
 
         // 退出登录
