@@ -284,141 +284,141 @@
     </style>
 </head>
 <body>
-    <!-- 导航栏 -->
-    <nav class="navbar">
-        <div class="navbar-brand">
-            🗺️ 中国旅游助手
+<!-- 导航栏 -->
+<nav class="navbar">
+    <div class="navbar-brand">
+        🗺️ 中国旅游助手
+    </div>
+    <div class="navbar-user">
+        <div class="user-info">
+            当前用户：<span id="username"></span>
         </div>
-        <div class="navbar-user">
-            <div class="user-info">
-                当前用户：<span id="username"></span>
-            </div>
-            <a href="center.html" class="center-btn">个人中心</a>
-            <button class="logout-btn" onclick="logout()">退出登录</button>
+        <a href="center.html" class="center-btn">个人中心</a>
+        <button class="logout-btn" onclick="logout()">退出登录</button>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <h1>欢迎来到中国旅游助手</h1>
+    <p>探索中国的美丽风景，发现更多精彩</p>
+
+    <!-- 搜索框 -->
+    <div class="search-container">
+        <input type="text" class="search-input" id="searchInput" placeholder="🔍 搜索景点、城市..." onkeypress="handleSearchKeyPress(event)">
+        <button class="search-btn" onclick="performSearch()">搜索</button>
+    </div>
+
+    <div class="nav-cards">
+        <div class="nav-card" onclick="goToMap()">
+            <div class="nav-card-icon">🌏</div>
+            <h2>去哪旅行</h2>
+            <p>浏览3D中国地图，选择你想去的省份和城市，查看热门景点</p>
         </div>
-    </nav>
 
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <h1>欢迎来到中国旅游助手</h1>
-        <p>探索中国的美丽风景，发现更多精彩</p>
-
-        <!-- 搜索框 -->
-        <div class="search-container">
-            <input type="text" class="search-input" id="searchInput" placeholder="🔍 搜索景点、城市..." onkeypress="handleSearchKeyPress(event)">
-            <button class="search-btn" onclick="performSearch()">搜索</button>
+        <div class="nav-card" onclick="goToHot()">
+            <div class="nav-card-icon">🔥</div>
+            <h2>热门景点</h2>
+            <p>发现全国最热门的旅游景点，查看精选旅游攻略</p>
         </div>
 
-        <div class="nav-cards">
-            <div class="nav-card" onclick="goToMap()">
-                <div class="nav-card-icon">🌏</div>
-                <h2>去哪旅行</h2>
-                <p>浏览3D中国地图，选择你想去的省份和城市，查看热门景点</p>
-            </div>
-
-            <div class="nav-card" onclick="goToHot()">
-                <div class="nav-card-icon">🔥</div>
-                <h2>热门景点</h2>
-                <p>发现全国最热门的旅游景点，查看精选旅游攻略</p>
-            </div>
-
-            <div class="nav-card" onclick="goToFootprint()">
-                <div class="nav-card-icon">📍</div>
-                <h2>旅行足迹</h2>
-                <p>记录你的旅行足迹，与好友共享美好时光，留下珍贵回忆</p>
-            </div>
-
-            <div class="nav-card" onclick="goToLedger()">
-                <div class="nav-card-icon">💰</div>
-                <h2>旅行账本</h2>
-                <p>智能记账助手，AI识别消费，清晰管理旅行支出</p>
-            </div>
-
-            <div class="nav-card" onclick="goToAiPlanner()">
-                <div class="nav-card-icon">🤖</div>
-                <h2>AI 旅行规划</h2>
-                <p>智能 AI 助手为您定制专属旅行攻略，一键生成详细行程</p>
-            </div>
-
-            <div class="nav-card" onclick="goToSpecialty()">
-                <div class="nav-card-icon">🌾</div>
-                <h2>探寻特产·助农</h2>
-                <p>发现地方特色农产品，支持农户，品味原生态美味</p>
-            </div>
+        <div class="nav-card" onclick="goToFootprint()">
+            <div class="nav-card-icon">📍</div>
+            <h2>旅行足迹</h2>
+            <p>记录你的旅行足迹，与好友共享美好时光，留下珍贵回忆</p>
         </div>
-    </section>
 
-    <!-- 页脚 -->
-    <footer class="footer">
-        © 2024 中国旅游助手 - 让旅行更美好
-    </footer>
+        <div class="nav-card" onclick="goToLedger()">
+            <div class="nav-card-icon">💰</div>
+            <h2>旅行账本</h2>
+            <p>智能记账助手，AI识别消费，清晰管理旅行支出</p>
+        </div>
 
-    <script>
-        $(document).ready(function() {
-            // 检查登录状态
-            const user = JSON.parse(localStorage.getItem('user'));
-            if (!user) {
-                // 未登录，跳转到登录页
-                window.location.href = 'login.html';
-                return;
-            }
+        <div class="nav-card" onclick="goToAiPlanner()">
+            <div class="nav-card-icon">🤖</div>
+            <h2>AI 旅行规划</h2>
+            <p>智能 AI 助手为您定制专属旅行攻略，一键生成详细行程</p>
+        </div>
 
-            // 显示用户名
-            $('#username').text(user.username);
-        });
+        <div class="nav-card" onclick="goToSpecialty()">
+            <div class="nav-card-icon">🌾</div>
+            <h2>探寻特产·助农</h2>
+            <p>发现地方特色农产品，支持农户，品味原生态美味</p>
+        </div>
+    </div>
+</section>
 
-        // 跳转到3D地图页
-        function goToMap() {
-            window.location.href = 'index.html';
-        }
+<!-- 页脚 -->
+<footer class="footer">
+    © 2024 中国旅游助手 - 让旅行更美好
+</footer>
 
-        // 跳转到热门景点页
-        function goToHot() {
-            window.location.href = 'hot.html';
-        }
-
-        // 跳转到旅行足迹页
-        function goToFootprint() {
-            window.location.href = 'footprint.html';
-        }
-
-        // 跳转到旅行账本页
-        function goToLedger() {
-            window.location.href = 'ledger_list.html';
-        }
-
-        // 跳转到 AI 旅行规划页
-        function goToAiPlanner() {
-            window.location.href = 'plan_generator.html';
-        }
-
-        // 跳转到地方特产页
-        function goToSpecialty() {
-            window.location.href = 'specialty_hub.html';
-        }
-
-        // 退出登录
-        function logout() {
-            localStorage.removeItem('user');
+<script>
+    $(document).ready(function() {
+        // 检查登录状态
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+            // 未登录，跳转到登录页
             window.location.href = 'login.html';
+            return;
         }
 
-        // 搜索功能
-        function performSearch() {
-            const keyword = $('#searchInput').val().trim();
-            if (keyword) {
-                window.location.href = 'search.html?keyword=' + encodeURIComponent(keyword);
-            } else {
-                alert('请输入搜索关键字');
-            }
-        }
+        // 显示用户名
+        $('#username').text(user.username);
+    });
 
-        // 回车键搜索
-        function handleSearchKeyPress(event) {
-            if (event.key === 'Enter') {
-                performSearch();
-            }
+    // 跳转到3D地图页
+    function goToMap() {
+        window.location.href = 'index.html';
+    }
+
+    // 跳转到热门景点页
+    function goToHot() {
+        window.location.href = 'hot.html';
+    }
+
+    // 跳转到旅行足迹页
+    function goToFootprint() {
+        window.location.href = 'footprint.html';
+    }
+
+    // 跳转到旅行账本页
+    function goToLedger() {
+        window.location.href = 'ledger_list.html';
+    }
+
+    // 跳转到 AI 旅行规划页
+    function goToAiPlanner() {
+        window.location.href = 'plan_generator.html';
+    }
+
+    // 跳转到地方特产页
+    function goToSpecialty() {
+        window.location.href = 'specialty_hub.html';
+    }
+
+    // 退出登录
+    function logout() {
+        localStorage.removeItem('user');
+        window.location.href = 'login.html';
+    }
+
+    // 搜索功能
+    function performSearch() {
+        const keyword = $('#searchInput').val().trim();
+        if (keyword) {
+            window.location.href = 'search.html?keyword=' + encodeURIComponent(keyword);
+        } else {
+            alert('请输入搜索关键字');
         }
-    </script>
+    }
+
+    // 回车键搜索
+    function handleSearchKeyPress(event) {
+        if (event.key === 'Enter') {
+            performSearch();
+        }
+    }
+</script>
 </body>
 </html>
