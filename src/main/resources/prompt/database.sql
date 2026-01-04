@@ -191,6 +191,32 @@ create table footprint_collaborator
 create index idx_user
     on footprint_collaborator (user_id);
 
+create table footprint_note
+(
+    id           bigint auto_increment comment '记录ID'
+        primary key,
+    footprint_id bigint                              not null comment '所属足迹相册ID',
+    author_id    bigint                              not null comment '发布者用户ID',
+    content      text                                not null comment '文字内容',
+    create_time  timestamp default CURRENT_TIMESTAMP null comment '创建时间',
+    constraint footprint_note_ibfk_1
+        foreign key (footprint_id) references travel_footprint (id)
+            on delete cascade,
+    constraint footprint_note_ibfk_2
+        foreign key (author_id) references users (id)
+            on delete cascade
+)
+    comment '足迹文字记录表' charset = utf8mb4;
+
+create index idx_author
+    on footprint_note (author_id);
+
+create index idx_create_time
+    on footprint_note (create_time);
+
+create index idx_footprint
+    on footprint_note (footprint_id);
+
 create table footprint_photo
 (
     id           bigint auto_increment comment '照片ID'

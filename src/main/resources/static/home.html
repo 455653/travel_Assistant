@@ -103,9 +103,9 @@
         /* 导航卡片容器 */
         .nav-cards {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 40px;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             animation: fadeInUp 1.2s ease;
         }
@@ -175,6 +175,16 @@
 
         .nav-card:nth-child(3) h2,
         .nav-card:nth-child(3) p {
+            color: white;
+        }
+
+        .nav-card:nth-child(4) {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: white;
+        }
+
+        .nav-card:nth-child(4) h2,
+        .nav-card:nth-child(4) p {
             color: white;
         }
 
@@ -297,6 +307,12 @@
                 <h2>旅行足迹</h2>
                 <p>记录你的旅行足迹，与好友共享美好时光，留下珍贵回忆</p>
             </div>
+
+            <div class="nav-card" onclick="goToLedger()">
+                <div class="nav-card-icon">💰</div>
+                <h2>旅行账本</h2>
+                <p>智能记账助手，AI识别消费，清晰管理旅行支出</p>
+            </div>
         </div>
     </section>
 
@@ -332,6 +348,11 @@
         // 跳转到旅行足迹页
         function goToFootprint() {
             window.location.href = 'footprint.html';
+        }
+
+        // 跳转到旅行账本页
+        function goToLedger() {
+            window.location.href = 'ledger_list.html';
         }
 
         // 退出登录

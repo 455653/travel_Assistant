@@ -1,0 +1,85 @@
+# Role
+你是一名资深 Java Spring Boot 全栈开发工程师，精通 MySQL、MyBatis、ECharts 以及 LLM (大模型) 应用开发。
+我正在开发“中国旅游助手”项目，目前已拥有“旅行足迹”(`travel_footprint`)和“好友协作”(`footprint_collaborator`)功能。
+
+# Goal
+请在现有项目中新增**“旅行智能记账 (Smart Travel Ledger)”**模块。
+核心目标是：基于现有的旅行足迹，为每一个足迹提供一个协作账本，支持手动记账和**AI 智能文本解析记账**，并提供图表分析。
+
+# Context (现有资源)
+1.  **数据库**：
+    * `travel_footprint`: 足迹主表 (字段: `id`, `title`, `creator_id`...)。
+    * `footprint_collaborator`: 协作者表 (字段: `footprint_id`, `user_id`)。
+2.  **AI 服务**：项目中已有 `DeepSeekService`，可以使用其 chat 接口。
+3.  **前端**：使用 jQuery + Bootstrap + ECharts。
+
+# Implementation Plan (请严格按此步骤生成代码)
+
+## Task 1: Database Design (SQL)
+请生成 MySQL 脚本，新建 `expense_record` 表：
+* `id`: bigint, primary key.
+* `footprint_id`: bigint, not null (关联足迹).
+* `payer_id`: bigint, not null (支付人，关联用户表).
+* `category`: varchar(50) (例如：餐饮、交通、住宿、门票、购物、其他).
+* `amount`: decimal(10,2) (金额).
+* `expense_date`: date (消费日期).
+* `description`: varchar(255) (备注/描述).
+* `create_time`: timestamp.
+* **外键**：关联 `travel_footprint` 和 `users`，设置级联删除。
+
+## Task 2: Backend Implementation (Java)
+
+### 2.1 Entity & Mapper
+* 创建 `ExpenseRecord` 实体类。
+* 创建 `ExpenseMapper` (XML)：
+    * `insert`: 插入记录。
+    * `deleteById`: 删除记录。
+    * `update`: 修改记录。
+    * `selectByFootprintId`: 查询某账本下的所有记录（按时间倒序），需关联查询 `payer_id` 对应的 `real_name` 或 `username`。
+    * `selectStatistics`: 按 `category` 分组统计总金额（用于图表）。
+
+### 2.2 Service Layer (`ExpenseService`)
+功能逻辑如下：
+1.  **权限校验 (Crucial)**：
+    * 增删改查任何账单前，必须校验 `CurrentUser` 是否是该 `footprint` 的 **Creator** 或者 **Collaborator**。如果不包含在内，抛出“无权操作”异常。
+2.  **AI 智能解析 (`parseExpenseByAI`)**：
+    * **输入**：用户输入的自然语言字符串（如“今天中午吃火锅花了300元”）。
+    * **处理**：构造 Prompt 调用 `DeepSeekService`。
+    * **DeepSeek Prompt 要求**：请指示 AI 提取“金额”、“日期(默认为今天)”、“分类(从[餐饮,交通,住宿,购物,门票,其他]中选择)”、“描述”。
+    * **输出**：要求 AI **只返回 JSON 格式**，不要废话。例如：`{"amount": 300, "category": "餐饮", "date": "2023-10-01", "description": "中午吃火锅"}`。
+    * **返回**：解析 JSON 并返回 `ExpenseRecord` 对象给 Controller（暂不入库，由前端确认后再保存）。
+
+### 2.3 Controller Layer (`ExpenseController`)
+* `GET /api/expense/list?footprintId=xx`: 获取账单列表。
+* `GET /api/expense/stats?footprintId=xx`: 获取统计数据。
+* `POST /api/expense/ai/parse`: 接收文本，返回 AI 解析后的预填数据。
+* `POST /api/expense/add`: 保存账单（手动或AI确认后的）。
+* `POST /api/expense/delete?id=xx`。
+
+## Task 3: Frontend Implementation (HTML/JS)
+
+### 3.1 新增页面 `ledger_list.html` (账本列表)
+* 复用 `home.html` 的头部。
+* 展示当前用户所有参与的足迹卡片（即 `travel_footprint`）。
+* 卡片标题显示：“{足迹标题}的账本”。
+* 点击卡片跳转到 `ledger_detail.html?id={footprintId}`。
+
+### 3.2 新增页面 `ledger_detail.html` (账本详情)
+页面分为三部分：
+1.  **统计图表区 (顶部)**：
+    * 使用 ECharts 展示一个 **饼图 (Pie Chart)**，显示各分类支出的占比。
+    * 显示一个总金额的大数字。
+2.  **记账操作区 (中部)**：
+    * **智能记账输入框**：一个宽输入框 + “AI 识别”按钮。
+        * 逻辑：输入文字 -> 点击识别 -> 调用后端 `/ai/parse` -> 将返回的 JSON 数据填充到下方的“手动表单”中 -> 用户检查无误后点击保存。
+    * **手动/确认表单**：包含金额、分类（下拉框）、日期、备注、保存按钮。
+3.  **账单明细列表 (底部)**：
+    * 表格展示：日期 | 分类 | 描述 | 金额 | 支付人 | 操作(删除)。
+
+# Constraints
+* **严禁修改**现有的 `UserService`, `UploadController` 等无关代码。
+* 确保 AI 解析失败时（如 JSON 格式错误）有 try-catch 处理，并提示前端“识别失败，请手动输入”。
+* ECharts 需自适应屏幕宽度。
+* SQL 脚本单独列出。
+
+请为我生成完整代码，包括 SQL、Java 类和 HTML 文件。

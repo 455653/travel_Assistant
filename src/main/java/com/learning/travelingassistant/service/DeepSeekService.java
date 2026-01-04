@@ -111,4 +111,75 @@ public class DeepSeekService {
                    .replace("\r", "\\r")
                    .replace("\t", "\\t");
     }
+
+    public String parseExpenseText(String userInput) {
+        try {
+            String systemPrompt = "你是一个智能记账助手。用户会输入一段自然语言描述消费，你需要提取关键信息。";
+            String userPrompt = String.format(
+                "请从以下文字中提取消费信息：\"%s\"\n\n" +
+                "要求：\n" +
+                "1. 提取金额（amount，数字类型）\n" +
+                "2. 判断分类（category），只能从以下选项中选择：餐饮、交通、住宿、门票、购物、其他\n" +
+                "3. 提取或推测日期（date，格式：yyyy-MM-dd，如果没有明确日期则使用今天：%s）\n" +
+                "4. 提取描述（description）\n\n" +
+                "**重要**：只返回纯JSON格式，不要有任何其他文字。格式示例：\n" +
+                "{\"amount\":300,\"category\":\"餐饮\",\"date\":\"2026-01-04\",\"description\":\"中午吃火锅\"}",
+                userInput,
+                java.time.LocalDate.now().toString()
+            );
+
+            String requestBody = String.format(
+                "{\"model\":\"deepseek-chat\",\"messages\":[" +
+                "{\"role\":\"system\",\"content\":\"%s\"}," +
+                "{\"role\":\"user\",\"content\":\"%s\"}" +
+                "],\"stream\":false}",
+                escapeJson(systemPrompt),
+                escapeJson(userPrompt)
+            );
+
+            Request request = new Request.Builder()
+                    .url(baseUrl + "/chat/completions")
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("Authorization", "Bearer " + apiKey)
+                    .post(RequestBody.create(requestBody, MediaType.parse("application/json")))
+                    .build();
+
+            logger.info("调用 DeepSeek API 解析消费文本: {}", userInput);
+
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    logger.error("DeepSeek API 调用失败: HTTP {}", response.code());
+                    return null;
+                }
+
+                String responseBody = response.body().string();
+                logger.info("DeepSeek API 响应: {}", responseBody);
+
+                JsonNode rootNode = objectMapper.readTree(responseBody);
+                JsonNode choices = rootNode.get("choices");
+
+                if (choices != null && choices.isArray() && choices.size() > 0) {
+                    JsonNode message = choices.get(0).get("message");
+                    if (message != null && message.has("content")) {
+                        String content = message.get("content").asText().trim();
+                        logger.info("AI 解析结果: {}", content);
+                        
+                        if (content.startsWith("{")) {
+                            return content;
+                        }
+                    }
+                }
+
+                logger.error("DeepSeek API 响应格式异常");
+                return null;
+            }
+
+        } catch (IOException e) {
+            logger.error("调用 DeepSeek API 异常: {}", e.getMessage(), e);
+            return null;
+        } catch (Exception e) {
+            logger.error("解析消费文本时发生未知错误: {}", e.getMessage(), e);
+            return null;
+        }
+    }
 }

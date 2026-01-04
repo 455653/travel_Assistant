@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>账本详情 - 中国旅游助手</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .stats-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .total-amount {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .total-amount h2 {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .total-amount .amount {
+            font-size: 48px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        #chartContainer {
+            width: 100%;
+            height: 400px;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .ai-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .ai-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .ai-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ai-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .manual-form {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .form-input, .form-select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .save-btn {
+            grid-column: 1 / -1;
+            padding: 12px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(17, 153, 142, 0.3);
+        }
+
+        .list-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .expense-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .expense-table th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .expense-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .expense-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .category-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .category-餐饮 { background: #fff3e0; color: #e65100; }
+        .category-交通 { background: #e3f2fd; color: #1565c0; }
+        .category-住宿 { background: #f3e5f5; color: #6a1b9a; }
+        .category-门票 { background: #e8f5e9; color: #2e7d32; }
+        .category-购物 { background: #fce4ec; color: #c2185b; }
+        .category-其他 { background: #f5f5f5; color: #616161; }
+
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+
+        .empty-list {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand" id="footprintTitle">账本详情</div>
+        <a href="ledger_list.html" class="back-btn">← 返回列表</a>
+    </nav>
+
+    <div class="container">
+        <!-- 统计图表区 -->
+        <div class="stats-section">
+            <div class="total-amount">
+                <h2>总支出</h2>
+                <div class="amount" id="totalAmount">¥0.00</div>
+            </div>
+            <div id="chartContainer"></div>
+        </div>
+
+        <!-- 记账操作区 -->
+        <div class="input-section">
+            <div class="section-title">
+                <span>🤖</span>
+                <span>智能记账</span>
+            </div>
+
+            <div class="ai-input-group">
+                <input type="text" class="ai-input" id="aiInput" placeholder="输入消费描述，例如：今天中午吃火锅花了300元">
+                <button class="ai-btn" onclick="parseByAI()">AI 识别</button>
+            </div>
+
+            <div class="section-title">
+                <span>📝</span>
+                <span>手动/确认记账</span>
+            </div>
+
+            <div class="manual-form">
+                <div class="form-group">
+                    <label class="form-label">金额 (元) *</label>
+                    <input type="number" class="form-input" id="amountInput" placeholder="0.00" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">分类 *</label>
+                    <select class="form-select" id="categorySelect">
+                        <option value="餐饮">餐饮</option>
+                        <option value="交通">交通</option>
+                        <option value="住宿">住宿</option>
+                        <option value="门票">门票</option>
+                        <option value="购物">购物</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">日期 *</label>
+                    <input type="date" class="form-input" id="dateInput">
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label">备注</label>
+                    <input type="text" class="form-input" id="descriptionInput" placeholder="可选">
+                </div>
+                <button class="save-btn" onclick="saveExpense()">💾 保存记录</button>
+            </div>
+        </div>
+
+        <!-- 账单明细列表 -->
+        <div class="list-section">
+            <div class="section-title">
+                <span>📊</span>
+                <span>账单明细</span>
+            </div>
+
+            <div id="expenseTableContainer">
+                <table class="expense-table" id="expenseTable">
+                    <thead>
+                        <tr>
+                            <th>日期</th>
+                            <th>分类</th>
+                            <th>描述</th>
+                            <th>金额</th>
+                            <th>支付人</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expenseTableBody"></tbody>
+                </table>
+            </div>
+
+            <div id="emptyList" class="empty-list" style="display: none;">
+                暂无账单记录
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let footprintId = null;
+        let myChart = null;
+
+        $(document).ready(function() {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) {
+                alert('请先登录');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            currentUser = JSON.parse(userStr);
+
+            const urlParams = new URLSearchParams(window.location.search);
+            footprintId = urlParams.get('id');
+
+            if (!footprintId) {
+                alert('账本ID不存在');
+                window.location.href = 'ledger_list.html';
+                return;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            $('#dateInput').val(today);
+
+            loadFootprintInfo();
+            loadExpenses();
+            loadStatistics();
+        });
+
+        function loadFootprintInfo() {
+            $.ajax({
+                url: '/api/footprint/detail',
+                method: 'GET',
+                data: { id: footprintId, userId: currentUser.id },
+                success: function(response) {
+                    if (response.code === 200) {
+                        const footprint = response.data.footprint;
+                        $('#footprintTitle').text(footprint.title + ' - 账本');
+                    }
+                }
+            });
+        }
+
+        function parseByAI() {
+            const text = $('#aiInput').val().trim();
+            if (!text) {
+                alert('请输入消费描述');
+                return;
+            }
+
+            $.ajax({
+                url: '/api/expense/ai/parse',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ text: text }),
+                success: function(response) {
+                    if (response.code === 200) {
+                        const data = response.data;
+                        $('#amountInput').val(data.amount);
+                        $('#categorySelect').val(data.category);
+                        $('#dateInput').val(data.date);
+                        $('#descriptionInput').val(data.description);
+                        alert('AI 识别成功！请确认信息后保存');
+                    } else {
+                        alert(response.msg);
+                    }
+                },
+                error: function() {
+                    alert('AI 识别失败，请手动输入');
+                }
+            });
+        }
+
+        function saveExpense() {
+            const amount = $('#amountInput').val();
+            const category = $('#categorySelect').val();
+            const date = $('#dateInput').val();
+            const description = $('#descriptionInput').val();
+
+            if (!amount || parseFloat(amount) <= 0) {
+                alert('请输入有效金额');
+                return;
+            }
+            if (!category) {
+                alert('请选择分类');
+                return;
+            }
+            if (!date) {
+                alert('请选择日期');
+                return;
+            }
+
+            $.ajax({
+                url: '/api/expense/add',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    userId: currentUser.id,
+                    footprintId: footprintId,
+                    amount: amount,
+                    category: category,
+                    expenseDate: date,
+                    description: description
+                }),
+                success: function(response) {
+                    if (response.code === 200) {
+                        alert('记账成功！');
+                        $('#amountInput').val('');
+                        $('#descriptionInput').val('');
+                        $('#aiInput').val('');
+                        loadExpenses();
+                        loadStatistics();
+                    } else {
+                        alert(response.msg);
+                    }
+                },
+                error: function() {
+                    alert('记账失败，请重试');
+                }
+            });
+        }
+
+        function loadExpenses() {
+            $.ajax({
+                url: '/api/expense/list',
+                method: 'GET',
+                data: { footprintId: footprintId, userId: currentUser.id },
+                success: function(response) {
+                    if (response.code === 200) {
+                        displayExpenses(response.data);
+                    }
+                }
+            });
+        }
+
+        function displayExpenses(expenses) {
+            const tbody = $('#expenseTableBody');
+            tbody.empty();
+
+            if (expenses.length === 0) {
+                $('#expenseTableContainer').hide();
+                $('#emptyList').show();
+                return;
+            }
+
+            $('#expenseTableContainer').show();
+            $('#emptyList').hide();
+
+            expenses.forEach(e => {
+                const row = $(`
+                    <tr>
+                        <td>${e.expenseDate}</td>
+                        <td><span class="category-tag category-${e.category}">${e.category}</span></td>
+                        <td>${e.description || '-'}</td>
+                        <td style="font-weight: bold; color: #e74c3c;">¥${parseFloat(e.amount).toFixed(2)}</td>
+                        <td>${e.payerName}</td>
+                        <td><button class="delete-btn" onclick="deleteExpense(${e.id})">删除</button></td>
+                    </tr>
+                `);
+                tbody.append(row);
+            });
+        }
+
+        function loadStatistics() {
+            $.ajax({
+                url: '/api/expense/stats',
+                method: 'GET',
+                data: { footprintId: footprintId, userId: currentUser.id },
+                success: function(response) {
+                    if (response.code === 200) {
+                        const data = response.data;
+                        $('#totalAmount').text('¥' + parseFloat(data.totalAmount).toFixed(2));
+                        drawChart(data.categoryStats);
+                    }
+                }
+            });
+        }
+
+        function drawChart(stats) {
+            if (myChart) {
+                myChart.dispose();
+            }
+
+            myChart = echarts.init(document.getElementById('chartContainer'));
+
+            const chartData = stats.map(s => ({
+                name: s.category,
+                value: parseFloat(s.totalAmount)
+            }));
+
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: ¥{c} ({d}%)'
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left'
+                },
+                series: [{
+                    type: 'pie',
+                    radius: '60%',
+                    data: chartData,
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    },
+                    label: {
+                        formatter: '{b}: ¥{c}'
+                    }
+                }]
+            };
+
+            myChart.setOption(option);
+
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+
+        function deleteExpense(id) {
+            if (!confirm('确定要删除这条记录吗？')) {
+                return;
+            }
+
+            $.ajax({
+                url: '/api/expense/delete',
+                method: 'POST',
+                data: { id: id, userId: currentUser.id },
+                success: function(response) {
+                    if (response.code === 200) {
+                        alert('删除成功');
+                        loadExpenses();
+                        loadStatistics();
+                    } else {
+                        alert(response.msg);
+                    }
+                },
+                error: function() {
+                    alert('删除失败，请重试');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

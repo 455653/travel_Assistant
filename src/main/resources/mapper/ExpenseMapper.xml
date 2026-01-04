@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.travelingassistant.mapper.ExpenseMapper">
+
+    <insert id="insert" parameterType="com.learning.travelingassistant.entity.ExpenseRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO expense_record (footprint_id, payer_id, category, amount, expense_date, description, create_time)
+        VALUES (#{footprintId}, #{payerId}, #{category}, #{amount}, #{expenseDate}, #{description}, NOW())
+    </insert>
+
+    <delete id="deleteById">
+        DELETE FROM expense_record WHERE id = #{id}
+    </delete>
+
+    <update id="update" parameterType="com.learning.travelingassistant.entity.ExpenseRecord">
+        UPDATE expense_record
+        SET category = #{category},
+            amount = #{amount},
+            expense_date = #{expenseDate},
+            description = #{description}
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectByFootprintId" resultType="com.learning.travelingassistant.entity.ExpenseRecord">
+        SELECT e.id, e.footprint_id, e.payer_id, e.category, e.amount, e.expense_date, e.description, e.create_time,
+               COALESCE(u.real_name, u.username) as payerName
+        FROM expense_record e
+        LEFT JOIN users u ON e.payer_id = u.id
+        WHERE e.footprint_id = #{footprintId}
+        ORDER BY e.expense_date DESC, e.create_time DESC
+    </select>
+
+    <select id="selectStatistics" resultType="map">
+        SELECT category, SUM(amount) as totalAmount
+        FROM expense_record
+        WHERE footprint_id = #{footprintId}
+        GROUP BY category
+        ORDER BY totalAmount DESC
+    </select>
+
+    <select id="selectById" resultType="com.learning.travelingassistant.entity.ExpenseRecord">
+        SELECT e.id, e.footprint_id, e.payer_id, e.category, e.amount, e.expense_date, e.description, e.create_time,
+               COALESCE(u.real_name, u.username) as payerName
+        FROM expense_record e
+        LEFT JOIN users u ON e.payer_id = u.id
+        WHERE e.id = #{id}
+    </select>
+
+</mapper>
