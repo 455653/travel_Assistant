@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.learning.travelingassistant.mapper.LocalSpecialtyMapper">
+
+    <resultMap id="LocalSpecialtyResultMap" type="com.learning.travelingassistant.entity.LocalSpecialty">
+        <id property="id" column="id"/>
+        <result property="cityId" column="city_id"/>
+        <result property="name" column="name"/>
+        <result property="type" column="type"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="description" column="description"/>
+        <result property="seasonalMonth" column="seasonal_month"/>
+        <result property="farmerContact" column="farmer_contact"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO local_specialty (city_id, name, type, image_url, description,
+                                     seasonal_month, farmer_contact)
+        VALUES (#{cityId}, #{name}, #{type}, #{imageUrl}, #{description},
+                #{seasonalMonth}, #{farmerContact})
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM local_specialty WHERE id = #{id}
+    </delete>
+
+    <update id="update">
+        UPDATE local_specialty
+        SET city_id = #{cityId},
+            name = #{name},
+            type = #{type},
+            image_url = #{imageUrl},
+            description = #{description},
+            seasonal_month = #{seasonalMonth},
+            farmer_contact = #{farmerContact}
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectByCityId" resultMap="LocalSpecialtyResultMap">
+        SELECT * FROM local_specialty
+        WHERE city_id = #{cityId}
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectAll" resultMap="LocalSpecialtyResultMap">
+        SELECT * FROM local_specialty
+        ORDER BY create_time DESC
+        <if test="limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+    <select id="search" resultMap="LocalSpecialtyResultMap">
+        SELECT * FROM local_specialty
+        WHERE name LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM local_specialty
+    </select>
+
+</mapper>

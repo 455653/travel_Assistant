@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>探寻地方特产 - 助农行动</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+            padding: 15px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .back-home-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .back-home-btn:hover {
+            background: white;
+            color: #43cea2;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+            padding: 60px 50px;
+            text-align: center;
+            color: white;
+        }
+
+        .hero-section h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+        }
+
+        .hero-section p {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .search-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px 25px;
+            font-size: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            outline: none;
+        }
+
+        .search-btn {
+            padding: 15px 35px;
+            font-size: 16px;
+            background: white;
+            color: #43cea2;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.4);
+        }
+
+        .ai-tool-btn {
+            position: fixed;
+            right: 30px;
+            bottom: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .ai-tool-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .specialty-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .specialty-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .specialty-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .specialty-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        .specialty-info {
+            padding: 20px;
+        }
+
+        .specialty-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .specialty-type {
+            display: inline-block;
+            padding: 5px 12px;
+            background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+            color: white;
+            border-radius: 15px;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .specialty-season {
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .modal-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .contact-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .contact-box h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .contact-box p {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .ai-modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 700px;
+            width: 90%;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .btn-generate {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .result-box.active {
+            display: block;
+        }
+
+        .btn-copy {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .btn-copy:hover {
+            background: #218838;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            🌾 探寻地方特产·助农行动
+        </div>
+        <a href="home.html" class="back-home-btn">← 返回首页</a>
+    </nav>
+
+    <section class="hero-section">
+        <h1>🍊 发现中国好特产</h1>
+        <p>每一份购买，都是对农户的支持 | 新鲜·绿色·原生态</p>
+
+        <div class="search-container">
+            <input type="text" class="search-input" id="searchInput" placeholder="🔍 搜索特产名称..." onkeypress="handleSearchKeyPress(event)">
+            <button class="search-btn" onclick="performSearch()">搜索</button>
+        </div>
+    </section>
+
+    <div class="container">
+        <div class="specialty-grid" id="specialtyGrid">
+            <!-- 动态加载特产卡片 -->
+        </div>
+
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state-icon">🌱</div>
+            <h3>暂无特产数据</h3>
+            <p>更多地方特产正在陆续上架中...</p>
+        </div>
+
+        <div class="loading" id="loading">
+            <p>🌾 正在加载特产数据...</p>
+        </div>
+    </div>
+
+    <!-- AI 助农工具按钮 -->
+    <button class="ai-tool-btn" onclick="openAiModal()" title="AI 文案助手">🤖</button>
+
+    <!-- 特产详情模态框 -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeDetailModal()">&times;</span>
+            <h2 class="modal-title" id="modalTitle"></h2>
+            <img class="modal-image" id="modalImage" src="" alt="">
+            <div id="modalDescription"></div>
+            <div class="contact-box">
+                <h3>💚 助农购买方式</h3>
+                <p id="modalContact"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI 文案生成模态框 -->
+    <div class="modal" id="aiModal">
+        <div class="ai-modal-content">
+            <span class="modal-close" onclick="closeAiModal()">&times;</span>
+            <h2 class="modal-title">🤖 AI 助农文案生成器</h2>
+            <p style="color: #666; margin-bottom: 20px;">让 AI 帮您生成吸引人的朋友圈营销文案！</p>
+
+            <div class="form-group">
+                <label for="productName">特产名称 *</label>
+                <input type="text" id="productName" placeholder="例如：赣南脐橙">
+            </div>
+
+            <div class="form-group">
+                <label for="productFeatures">特点关键词 *</label>
+                <input type="text" id="productFeatures" placeholder="例如：香甜多汁、自家种植、无农药">
+            </div>
+
+            <button class="btn-generate" onclick="generateMarketingText()">✨ 生成带货文案</button>
+
+            <div class="result-box" id="resultBox">
+                <h4 style="margin-bottom: 10px;">📝 生成的文案：</h4>
+                <div id="generatedText" style="line-height: 1.8; color: #333;"></div>
+                <button class="btn-copy" onclick="copyText()">📋 复制文案</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        let specialtiesData = [];
+
+        $(document).ready(function() {
+            loadAllSpecialties();
+        });
+
+        function loadAllSpecialties() {
+            $('#loading').show();
+            $('#emptyState').hide();
+
+            $.ajax({
+                url: '/api/specialty/all?page=1&pageSize=100',
+                method: 'GET',
+                success: function(response) {
+                    if (response.code === 200) {
+                        specialtiesData = response.data.list || response.data;
+                        renderSpecialties(specialtiesData);
+                    } else {
+                        $('#emptyState').show();
+                    }
+                },
+                error: function() {
+                    alert('❌ 加载特产数据失败');
+                    $('#emptyState').show();
+                },
+                complete: function() {
+                    $('#loading').hide();
+                }
+            });
+        }
+
+        function renderSpecialties(data) {
+            const grid = $('#specialtyGrid');
+            grid.empty();
+
+            if (!data || data.length === 0) {
+                $('#emptyState').show();
+                return;
+            }
+
+            $('#emptyState').hide();
+
+            data.forEach(specialty => {
+                const card = `
+                    <div class="specialty-card" onclick="showDetail(${specialty.id})">
+                        <img class="specialty-image" src="${specialty.imageUrl || 'https://via.placeholder.com/280x200?text=' + specialty.name}" alt="${specialty.name}">
+                        <div class="specialty-info">
+                            <div class="specialty-name">${specialty.name}</div>
+                            <span class="specialty-type">${specialty.type}</span>
+                            <div class="specialty-season">
+                                📅 ${specialty.seasonalMonth || '全年供应'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.append(card);
+            });
+        }
+
+        function showDetail(id) {
+            const specialty = specialtiesData.find(s => s.id === id);
+            if (!specialty) return;
+
+            $('#modalTitle').text(specialty.name);
+            $('#modalImage').attr('src', specialty.imageUrl || 'https://via.placeholder.com/600x300?text=' + specialty.name);
+            $('#modalDescription').html(`
+                <p style="line-height: 1.8; color: #666; margin-bottom: 15px;">
+                    ${specialty.description || '暂无详细介绍'}
+                </p>
+                <p style="color: #999; font-size: 14px;">
+                    <strong>上市季节：</strong>${specialty.seasonalMonth || '全年供应'}
+                </p>
+            `);
+            $('#modalContact').text(specialty.farmerContact || '请联系平台客服');
+            $('#detailModal').addClass('active');
+        }
+
+        function closeDetailModal() {
+            $('#detailModal').removeClass('active');
+        }
+
+        function openAiModal() {
+            $('#aiModal').addClass('active');
+            $('#resultBox').removeClass('active');
+            $('#productName').val('');
+            $('#productFeatures').val('');
+        }
+
+        function closeAiModal() {
+            $('#aiModal').removeClass('active');
+        }
+
+        function generateMarketingText() {
+            const name = $('#productName').val().trim();
+            const features = $('#productFeatures').val().trim();
+
+            if (!name || !features) {
+                alert('⚠️ 请填写特产名称和特点关键词');
+                return;
+            }
+
+            $('.btn-generate').prop('disabled', true).text('生成中...');
+
+            $.ajax({
+                url: '/api/specialty/ai/generate-text',
+                method: 'GET',
+                data: { name, features },
+                success: function(response) {
+                    if (response.code === 200) {
+                        $('#generatedText').text(response.data);
+                        $('#resultBox').addClass('active');
+                    } else {
+                        alert('❌ 生成失败：' + response.msg);
+                    }
+                },
+                error: function() {
+                    alert('❌ 网络错误，请稍后重试');
+                },
+                complete: function() {
+                    $('.btn-generate').prop('disabled', false).text('✨ 生成带货文案');
+                }
+            });
+        }
+
+        function copyText() {
+            const text = $('#generatedText').text();
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ 文案已复制到剪贴板！');
+            }).catch(() => {
+                alert('❌ 复制失败，请手动复制');
+            });
+        }
+
+        function performSearch() {
+            const keyword = $('#searchInput').val().trim();
+            if (!keyword) {
+                loadAllSpecialties();
+                return;
+            }
+
+            $('#loading').show();
+            $('#specialtyGrid').empty();
+
+            $.ajax({
+                url: '/api/specialty/search',
+                method: 'GET',
+                data: { keyword },
+                success: function(response) {
+                    if (response.code === 200) {
+                        specialtiesData = response.data;
+                        renderSpecialties(specialtiesData);
+                    }
+                },
+                error: function() {
+                    alert('❌ 搜索失败');
+                },
+                complete: function() {
+                    $('#loading').hide();
+                }
+            });
+        }
+
+        function handleSearchKeyPress(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        }
+
+        $(document).on('click', '.modal', function(e) {
+            if ($(e.target).hasClass('modal')) {
+                closeDetailModal();
+                closeAiModal();
+            }
+        });
+    </script>
+</body>
+</html>

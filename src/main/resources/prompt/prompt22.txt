@@ -1,0 +1,74 @@
+# Role
+你是一名资深 Java Spring Boot 全栈开发工程师。
+我正在开发“中国旅游助手”项目，目前已具备景点、足迹、旅行规划等功能。
+现在需要新增一个公益性质的模块：**“探寻地方特产 (Explore Local Specialties)”**，旨在通过展示各地农产品来助力农户。
+
+# Goal
+请在现有项目中新增“特产管理与展示”功能，包含独立的数据库表、后端接口、前端展示页面，并集成 **DeepSeek API** 帮助农户生成产品营销文案。
+
+# Implementation Plan (请严格按此步骤生成代码)
+
+## Task 1: Database Design (SQL)
+请生成 MySQL 脚本，新建 `local_specialty` 表：
+* `id`: bigint, primary key.
+* `city_id`: bigint, not null (关联城市).
+* `name`: varchar(100) (特产名称, 如"赣南脐橙").
+* `type`: varchar(50) (分类: 水果/干货/工艺品/小吃/茶叶).
+* `image_url`: varchar(500) (图片地址).
+* `description`: text (产品介绍).
+* `seasonal_month`: varchar(50) (上市季节, 如 "10月-12月").
+* `farmer_contact`: varchar(100) (助农联系方式/购买链接).
+* `create_time`: timestamp.
+* **外键**：关联 `city` 表，级联删除。
+* **索引**：对 `city_id` 和 `type` 建索引。
+
+## Task 2: Backend Implementation (Java)
+
+### 2.1 Entity & Mapper
+* 创建 `LocalSpecialty` 实体类。
+* 创建 `LocalSpecialtyMapper` (XML)：
+    * `insert`, `delete`, `update`.
+    * `selectByCityId`: 查询某城市的特产。
+    * `selectAll`: 分页查询所有（用于特产大厅）。
+    * `search`: 根据名称模糊查询。
+
+### 2.2 Service Layer (`SpecialtyService`)
+1.  **基础业务**：实现 CRUD 操作。
+2.  **AI 文案助手 (`generateMarketingText`)**：
+    * **输入**：特产名称、特点关键词（如：甜、多汁、自家种植）。
+    * **逻辑**：调用 `DeepSeekService`。
+    * **Prompt 构造**：告诉 AI "你是一名资深农产品带货主播。请根据特产名称'{name}'和特点'{features}'，写一段吸引人的朋友圈营销文案，包含Emoji表情，风格亲切自然，突出助农主题"。
+    * **输出**：返回生成的文本。
+
+### 2.3 Controller Layer (`SpecialtyController`)
+* `GET /api/specialty/list?cityId=xx`: 获取列表。
+* `GET /api/specialty/all`: 获取所有（支持分页）。
+* `POST /api/specialty/add`: 添加特产（管理员或用户）。
+* `GET /api/specialty/ai/generate-text`: 调用 AI 生成营销文案。
+
+## Task 3: Frontend Implementation (HTML/JS)
+
+### 3.1 新增页面 `specialty_hub.html` (特产大厅)
+* **顶部导航**：复用 `index.html` 的头部。
+* **搜索区**：一个大的搜索框（搜特产名） + 下拉筛选（按省份/城市筛选）。
+* **AI 助农工具箱 (侧边栏或顶部按钮)**：
+    * 点击弹出模态框。
+    * 输入框：输入“特产名”和“特点”。
+    * 按钮：“生成带货文案”。
+    * 结果展示区：显示 AI 生成的文案，并提供“复制”按钮。
+* **特产列表区**：
+    * 使用 Grid 布局展示特产卡片。
+    * **卡片内容**：图片（上方铺满）、名称、类型（标签样式）、上市季节（小图标提示）。
+    * **交互**：点击卡片弹出详情模态框（展示 `description` 和 **醒目的 `farmer_contact` 购买方式**）。
+
+### 3.2 首页入口 (`index.html`)
+* 在首页导航栏或显著位置添加一个“探寻特产 (助农)”的链接，指向 `specialty_hub.html`。
+
+# Constraints (约束)
+* **严禁修改** `User`, `Login`, `Attraction` 等核心业务逻辑。
+* 保持代码风格一致（Result 统一返回）。
+* DeepSeek 调用逻辑复用现有的 `DeepSeekService`。
+* 前端样式请使用简洁美观的 CSS（类似卡片式设计），体现“绿色/乡村/助农”的视觉元素（如使用一点绿色调）。
+* SQL 脚本单独列出。
+
+请为我生成完整、详细的代码实现，包括 SQL、Java 后端代码和 HTML/JS 前端代码。

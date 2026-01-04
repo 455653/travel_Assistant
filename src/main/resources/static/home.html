@@ -103,7 +103,7 @@
         /* 导航卡片容器 */
         .nav-cards {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(6, 1fr);
             gap: 40px;
             max-width: 1400px;
             margin: 0 auto;
@@ -195,6 +195,16 @@
 
         .nav-card:nth-child(5) h2,
         .nav-card:nth-child(5) p {
+            color: white;
+        }
+
+        .nav-card:nth-child(6) {
+            background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+            color: white;
+        }
+
+        .nav-card:nth-child(6) h2,
+        .nav-card:nth-child(6) p {
             color: white;
         }
 
@@ -329,6 +339,12 @@
                 <h2>AI 旅行规划</h2>
                 <p>智能 AI 助手为您定制专属旅行攻略，一键生成详细行程</p>
             </div>
+
+            <div class="nav-card" onclick="goToSpecialty()">
+                <div class="nav-card-icon">🌾</div>
+                <h2>探寻特产·助农</h2>
+                <p>发现地方特色农产品，支持农户，品味原生态美味</p>
+            </div>
         </div>
     </section>
 
@@ -374,6 +390,11 @@
         // 跳转到 AI 旅行规划页
         function goToAiPlanner() {
             window.location.href = 'plan_generator.html';
+        }
+
+        // 跳转到地方特产页
+        function goToSpecialty() {
+            window.location.href = 'specialty_hub.html';
         }
 
         // 退出登录
